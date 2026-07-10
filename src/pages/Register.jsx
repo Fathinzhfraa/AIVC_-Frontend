@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { asset } from "../lib/asset";
 
 function AutenticBackground() {
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
       <img
-        src="/images/story-interior.jpg"
+        src={asset("/images/story-interior.jpg")}
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
       />

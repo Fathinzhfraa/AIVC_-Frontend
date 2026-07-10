@@ -1,3 +1,5 @@
+import { asset } from "../lib/asset";
+
 export default function StorySection() {
   return (
     <section id="story" className="w-full max-w-7xl mx-auto px-gutter py-xl">
@@ -32,7 +34,7 @@ export default function StorySection() {
           </div>
           <div className="relative h-64 md:h-72 overflow-hidden border-2 border-on-background neu-shadow">
             <img
-              src="/images/story-interior.jpg"
+              src={asset("/images/story-interior.jpg")}
               alt="Autentic Cafe Interior"
               className="w-full h-full object-cover grayscale-[20%]"
             />
@@ -45,7 +47,7 @@ export default function StorySection() {
         <div className="flex flex-col gap-lg">
           <div className="relative h-64 md:h-72 overflow-hidden border-2 border-on-background neu-shadow">
             <img
-              src="/images/story-coffee-art.jpg"
+              src={asset("/images/story-coffee-art.jpg")}
               alt="Coffee Art"
               className="w-full h-full object-cover grayscale-[20%]"
             />

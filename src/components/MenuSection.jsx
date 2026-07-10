@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { getAllMenu, syncFromServer } from "../data/menuStore";
+import { asset } from "../lib/asset";
 
 function MenuCard({ item, catIcon }) {
   const { addItem } = useCart();
@@ -36,7 +37,7 @@ function MenuCard({ item, catIcon }) {
         </div>
       )}
       {item.image && (
-        <img alt={item.name} className="w-full h-44 object-cover border-2 border-on-background mb-2" src={item.image} />
+        <img alt={item.name} className="w-full h-44 object-cover border-2 border-on-background mb-2"         src={asset(item.image)} />
       )}
       <div className="flex justify-between items-start gap-2">
         <h4 className="font-label-bold text-label-bold uppercase text-sm leading-tight">{item.name}</h4>

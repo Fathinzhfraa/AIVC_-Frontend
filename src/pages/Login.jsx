@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { asset } from "../lib/asset";
 import database from "../data/database";
 
 function AutenticBackground() {
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
       <img
-        src="/images/story-interior.jpg"
+        src={asset("/images/story-interior.jpg")}
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
       />

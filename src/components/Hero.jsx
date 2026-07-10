@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { asset } from "../lib/asset";
 
 export default function Hero() {
   return (
@@ -33,7 +34,7 @@ export default function Hero() {
             <img
               alt="Perfect Cup of Coffee"
               className="w-full h-full object-cover grayscale-[20%] contrast-125 hover:scale-105 transition-transform duration-700"
-              src="/images/autentics-cafe.jpeg"
+              src={asset("/images/autentics-cafe.jpeg")}
             />
           </div>
         </div>

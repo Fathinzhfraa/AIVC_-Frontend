@@ -1,3 +1,5 @@
+import { asset } from "../lib/asset";
+
 const steps = [
   {
     number: 1,
@@ -62,7 +64,7 @@ export default function ProcessSection() {
             >
               <div className="h-40 overflow-hidden border-b-2 border-on-background">
                 <img
-                  src={step.image}
+                  src={asset(step.image)}
                   alt={step.title}
                   className="w-full h-full object-cover grayscale-[20%] hover:scale-105 transition-transform duration-500"
                 />
