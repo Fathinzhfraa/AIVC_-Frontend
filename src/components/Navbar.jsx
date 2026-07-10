@@ -12,6 +12,7 @@ export default function Navbar({ onCartOpen }) {
   const showCommerce = !!user && user.role !== "admin" && !isLoginPage;
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function Navbar({ onCartOpen }) {
 
   useEffect(() => {
     setMenuOpen(false);
+    setMobileOpen(false);
   }, [location.pathname]);
 
   function handleLogout() {
@@ -156,17 +158,88 @@ export default function Navbar({ onCartOpen }) {
           )}
           <button
             aria-label="Open Mobile Menu"
+            onClick={() => setMobileOpen((v) => !v)}
             className="md:hidden border-2 border-on-background p-2 neu-shadow active:translate-x-1 active:translate-y-1 active:shadow-none bg-surface"
           >
             <span
               className="material-symbols-outlined"
               style={{ fontVariationSettings: "'FILL' 1" }}
             >
-              menu
+              {mobileOpen ? "close" : "menu"}
             </span>
           </button>
         </div>
       </div>
+
+      {mobileOpen && (
+        <div className="md:hidden border-t-2 border-on-background bg-background px-gutter py-4 flex flex-col gap-1">
+          <a
+            href="#menu"
+            onClick={() => setMobileOpen(false)}
+            className="text-on-surface-variant font-medium hover:text-primary py-2 uppercase"
+          >
+            Menu
+          </a>
+          <a
+            href="#story"
+            onClick={() => setMobileOpen(false)}
+            className="text-on-surface-variant font-medium hover:text-primary py-2 uppercase"
+          >
+            Story
+          </a>
+          {user && (
+            <>
+              <Link
+                to="/orders"
+                onClick={() => setMobileOpen(false)}
+                className="text-on-surface-variant font-medium hover:text-primary py-2 uppercase"
+              >
+                Pesanan
+              </Link>
+              <Link
+                to="/reviews"
+                onClick={() => setMobileOpen(false)}
+                className="text-on-surface-variant font-medium hover:text-primary py-2 uppercase"
+              >
+                Ulasan
+              </Link>
+              <Link
+                to="/fotobox"
+                onClick={() => setMobileOpen(false)}
+                className="text-on-surface-variant font-medium hover:text-primary py-2 uppercase"
+              >
+                Fotobox
+              </Link>
+              {user.role === "admin" && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="text-primary font-bold py-2 uppercase"
+                >
+                  Admin
+                </Link>
+              )}
+            </>
+          )}
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="text-left text-on-background font-medium hover:text-primary py-2 uppercase flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">logout</span>
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              className="bg-primary text-on-primary border-2 border-on-background neu-shadow px-4 py-2 font-label-bold text-label-bold uppercase mt-2 text-center"
+            >
+              Login
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
