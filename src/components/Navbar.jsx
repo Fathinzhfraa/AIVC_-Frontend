@@ -46,7 +46,7 @@ export default function Navbar({ onCartOpen }) {
         <ul className="hidden md:flex items-center gap-lg">
           <li>
             <a
-              href="/#menu"
+              href="#menu"
               className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
             >
               MENU
@@ -54,7 +54,7 @@ export default function Navbar({ onCartOpen }) {
           </li>
           <li>
             <a
-              href="/#story"
+              href="#story"
               className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
             >
               STORY

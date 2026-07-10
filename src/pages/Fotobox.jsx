@@ -491,7 +491,7 @@ export default function Fotobox() {
               Kamu harus melakukan pesanan dulu sebelum bisa menggunakan Fotobox.
             </p>
             <Link
-              to="/#menu"
+              to="#menu"
               className="inline-block mt-4 bg-primary text-on-primary border-2 border-on-background neu-shadow px-6 py-3 font-label-bold text-label-bold uppercase transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               Mulai Pesan

@@ -16,13 +16,13 @@ export default function Hero() {
         </p>
         <div className="pt-sm flex gap-sm flex-wrap">
           <Link
-            to="/#menu"
+            to="#menu"
             className="bg-primary text-on-primary border-2 border-on-background neu-shadow px-8 py-3 font-label-bold text-label-bold uppercase transition-all active:translate-x-1 active:translate-y-1 active:shadow-none inline-block"
           >
             VIEW MENU
           </Link>
           <Link
-          to = "/#story" className="bg-surface text-on-background border-2 border-on-background neu-shadow px-8 py-3 font-label-bold text-label-bold uppercase transition-all active:translate-x-1 active:translate-y-1 active:shadow-none">
+          to = "#story" className="bg-surface text-on-background border-2 border-on-background neu-shadow px-8 py-3 font-label-bold text-label-bold uppercase transition-all active:translate-x-1 active:translate-y-1 active:shadow-none">
             OUR STORY
           </Link>
         </div>
