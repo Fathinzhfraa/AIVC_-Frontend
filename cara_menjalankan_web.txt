@@ -1,0 +1,142 @@
+======================================================================
+CARA MENGUPLOAD WEB INI KE GITHUB & CARA MENJALANKAN WEB
+Project: AIVC - Frontend (Vite + React + Express)
+======================================================================
+
+----------------------------------------------------------------------
+BAGIAN 0: CARA PINDAHIN / BUKA PROJECT INI DI VS CODE
+----------------------------------------------------------------------
+
+A. Kalau project masih di folder ini (lokal):
+  Buka VS Code > menu File > Open Folder > pilih folder
+  "AIVC_-Frontend" > klik Open.
+  Atau lewat terminal:
+    code /workspaces/AIVC_-Frontend
+  (perintah "code" otomatis ada kalau VS Code sudah terinstall
+   dan "Add to PATH" dicentang saat install)
+
+B. Kalau sudah di-clone dari GitHub ke komputer lain:
+  git clone https://github.com/USERNAME/AIVC-Frontend.git
+  code AIVC-Frontend
+
+C. Extension VS Code yang disarankan (biar nyaman):
+  - ES7+ React/Redux/React-Native snippets
+  - Tailwind CSS IntelliSense
+  - Prettier - Code formatter
+  - ESLint
+
+D. Cara menjalankan terminal di dalam VS Code:
+  Buka menu Terminal > New Terminal, lalu ketik perintah
+  npm install / npm run dev seperti di BAGIAN 2.
+
+----------------------------------------------------------------------
+BAGIAN 1: CARA MENGUPLOAD KE GITHUB TANPA EROR
+----------------------------------------------------------------------
+
+Syarat:
+- Sudah install Git (cek: git --version)
+- Sudah punya akun GitHub
+- Terminal/CMD di folder project ini
+
+LANGKAH 1 - Buka terminal di folder project ini
+  cd /workspaces/AIVC_-Frontend
+
+LANGKAH 2 - Inisialisasi Git (hanya sekali di awal)
+  git init
+
+LANGKAH 3 - Buat file .gitignore (SUDAH ADA di project ini)
+  File .gitignore penting agar folder node_modules dan dist TIDAK
+  diupload. Kalau lupa, upload akan sangat lambat / eror karena
+  ukuran besar. Pastikan isinya memuat:
+    node_modules/
+    dist/
+    .env
+
+LANGKAH 4 - Cek status file yang akan diupload
+  git status
+  (pastikan node_modules dan dist TIDAK muncul / diabaikan)
+
+LANGKAH 5 - Tambahkan semua file ke staging
+  git add .
+
+LANGKAH 6 - Commit (simpan ke repository lokal)
+  git commit -m "Initial commit AIVC Frontend"
+
+LANGKAH 7 - Buat repository baru di GitHub
+  - Buka https://github.com/new
+  - Isi nama repository (misal: AIVC-Frontend)
+  - JANGAN centang "Add a README" / LICENSE / .gitignore
+  - Klik "Create repository"
+
+LANGKAH 8 - Hubungkan repo lokal ke GitHub
+  (ganti USERNAME dan REPO sesuai punya kamu)
+  git branch -M main
+  git remote add origin https://github.com/USERNAME/AIVC-Frontend.git
+
+LANGKAH 9 - Upload (push) ke GitHub
+  git push -u origin main
+
+  Kalau diminta login: gunakan GitHub username & password/token.
+  CATATAN: GitHub sudah tidak terima password biasa, gunakan
+  "Personal Access Token (PAT)" sebagai password.
+  Cara bikin PAT: GitHub > Settings > Developer settings >
+  Personal access tokens > Tokens (classic) > Generate new token
+  (centang scope "repo").
+
+----------------------------------------------------------------------
+BAGIAN 2: CARA MENJALANKAN WEB DI KOMPUTER LAIN (SETELAH CLONE)
+----------------------------------------------------------------------
+
+LANGKAH 1 - Clone repository (di komputer tujuan)
+  Cara clone = mengambil/mendownload seluruh isi repo GitHub ke
+  komputer kamu.
+
+  a. Buka terminal (CMD / PowerShell / Git Bash / VS Code terminal)
+  b. Pindah ke folder tujuan, misal Documents:
+       cd Documents
+  c. Jalankan perintah clone (ganti USERNAME & REPO punyamu):
+       git clone https://github.com/USERNAME/AIVC-Frontend.git
+     -> Akan terbuat folder "AIVC-Frontend" berisi semua file.
+  d. Masuk ke folder hasil clone:
+       cd AIVC-Frontend
+
+  Catatan URL clone:
+  - HTTPS (paling mudah): https://github.com/USERNAME/REPO.git
+  - SSH (butuh setup kunci): git@github.com:USERNAME/REPO.git
+  Kalau pakai HTTPS dan diminta password, isi dengan PAT
+  (Personal Access Token), bukan password akun.
+
+LANGKAH 2 - Install dependency
+  npm install
+
+LANGKAH 3 - Jalankan frontend (Vite)
+  npm run dev
+  Buka browser: http://localhost:5173
+
+LANGKAH 4 - Jalankan backend server (Express) - terminal lain
+  npm run server
+  Server jalan di http://localhost:3001
+
+LANGKAH 5 - Atau jalankan keduanya sekaligus
+  npm run dev:all
+
+LANGKAH 6 - Build untuk production (hasil di folder dist/)
+  npm run build
+  npm run preview
+
+----------------------------------------------------------------------
+CARA UPDATE / UPLOAD PERUBAHAN BERIKUTNYA
+----------------------------------------------------------------------
+  git add .
+  git commit -m "pesan perubahan"
+  git push
+
+======================================================================
+TROUBLESHOOTING (EROR UMUM)
+======================================================================
+1. Push lambat/eror -> pastikan node_modules & dist masuk .gitignore
+2. Remote sudah ada -> git remote remove origin lalu add lagi
+3. Gagal push "failed to push" -> git pull origin main dulu,
+   selesaikan konflik, lalu git push
+4. Token ditolak -> pakai PAT, bukan password akun
+======================================================================

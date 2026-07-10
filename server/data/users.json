@@ -1,0 +1,66 @@
+[
+  {
+    "id": "usr_001",
+    "username": "admin",
+    "name": "Admin Autentic",
+    "email": "admin@autentics.coffee",
+    "role": "admin"
+  },
+  {
+    "id": "usr_002",
+    "username": "user",
+    "name": "User Cafe",
+    "email": "user@example.com",
+    "role": "user"
+  },
+  {
+    "id": "usr_003",
+    "username": "Zahra",
+    "name": "Zahra",
+    "email": "zahra@example.com",
+    "role": "user"
+  },
+  {
+    "id": "usr_004",
+    "username": "ocan",
+    "name": "ocan",
+    "email": "ocan@example.com",
+    "role": "user"
+  },
+  {
+    "id": "usr_mreb6dmq72k",
+    "username": "chocolate",
+    "password": "zara123",
+    "name": "Zahra Rizkia",
+    "email": "zara@gmail.com",
+    "role": "user",
+    "createdAt": "2026-07-10T02:20:33.026Z"
+  },
+  {
+    "id": "usr_mrebfz212mc",
+    "username": "ocantik",
+    "password": "ocantik123",
+    "name": "Rausyan",
+    "email": "rausyan@gmail.com",
+    "role": "user",
+    "createdAt": "2026-07-10T02:28:00.697Z"
+  },
+  {
+    "id": "usr_mrebjzftaed",
+    "username": "thisis.patt",
+    "password": "zhap123",
+    "name": "Zhafira",
+    "email": "fathin_ochavira21@gmail.com",
+    "role": "user",
+    "createdAt": "2026-07-10T02:31:07.817Z"
+  },
+  {
+    "id": "usr_mrec8cnz5dk",
+    "username": "matchalattee",
+    "password": "matcha123",
+    "name": "Fathin Zhafira",
+    "email": "fathinochavira21@gmail.com",
+    "role": "user",
+    "createdAt": "2026-07-10T02:50:04.703Z"
+  }
+]

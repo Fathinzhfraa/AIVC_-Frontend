@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes fbpop {
+  0% { transform: scale(0.4); opacity: 0; }
+  30% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.85; }
+}
+
+@layer utilities {
+  .neu-shadow {
+    box-shadow: 4px 4px 0px 0px #000000;
+  }
+
+  .neu-card {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .neu-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px 0px #000000;
+  }
+}

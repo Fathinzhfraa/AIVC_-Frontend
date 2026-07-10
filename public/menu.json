@@ -1,0 +1,536 @@
+[
+  {
+    "id": "mnu_001",
+    "category": "COFFEE",
+    "categoryIcon": "local_cafe",
+    "name": "Autentic Espresso",
+    "price": 3.5,
+    "description": "Our signature blend. Bold, heavy body with notes of dark chocolate and raw sugar.",
+    "tags": [
+      "Hot"
+    ],
+    "image": "/images/espresso.jpg",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_002",
+    "category": "COFFEE",
+    "categoryIcon": "local_cafe",
+    "name": "Caffè Latte",
+    "price": 4.5,
+    "description": "Smooth espresso with steamed whole milk and a light layer of microfoam.",
+    "tags": [
+      "Hot",
+      "Iced"
+    ],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMgUTkp-A7TUvXlhjskhAtPOumNJkXJKE3SBG7Mx-QPw&s=10",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_003",
+    "category": "COFFEE",
+    "categoryIcon": "local_cafe",
+    "name": "Cappuccino",
+    "price": 4.5,
+    "description": "Bold espresso topped with thick, airy foam and a dusting of cocoa.",
+    "tags": [
+      "Hot"
+    ],
+    "image": "/images/cappuccino.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_004",
+    "category": "COFFEE",
+    "categoryIcon": "local_cafe",
+    "name": "Flat White",
+    "price": 4.75,
+    "description": "Double ristretto poured over silky steamed milk for an intense yet smooth taste.",
+    "tags": [
+      "Hot"
+    ],
+    "image": "/images/flat-white.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_005",
+    "category": "COFFEE",
+    "categoryIcon": "local_cafe",
+    "name": "Pour Over",
+    "price": 4.5,
+    "description": "Rotating single-origin beans, meticulously hand-brewed.",
+    "tags": [
+      "Hot"
+    ],
+    "image": "/images/pour-over.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_006",
+    "category": "COFFEE",
+    "categoryIcon": "local_cafe",
+    "name": "Iced Latte",
+    "price": 4.75,
+    "description": "Chilled espresso over milk and ice, refreshingly bold.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "/images/iced-latte.jpg",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_007",
+    "category": "COFFEE",
+    "categoryIcon": "local_cafe",
+    "name": "Cold Brew",
+    "price": 5,
+    "description": "Slow-steeped for 20 hours. Smooth, naturally sweet, and low in acidity.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "/images/cold-brew.jpg",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_008",
+    "category": "NON COFFEE",
+    "categoryIcon": "emoji_food_beverage",
+    "name": "Matcha Latte",
+    "price": 5,
+    "description": "Ceremonial-grade matcha whisked with steamed oat milk. Earthy and vibrant.",
+    "tags": [
+      "Hot",
+      "Iced"
+    ],
+    "image": "/images/matcha-latte.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_009",
+    "category": "NON COFFEE",
+    "categoryIcon": "emoji_food_beverage",
+    "name": "Dark Hot Chocolate",
+    "price": 4.75,
+    "description": "Rich, velvety Belgian dark chocolate steamed with whole milk.",
+    "tags": [
+      "Hot"
+    ],
+    "image": "/images/hot-chocolate.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_010",
+    "category": "NON COFFEE",
+    "categoryIcon": "emoji_food_beverage",
+    "name": "Chai Latte",
+    "price": 4.75,
+    "description": "House-spiced chai concentrate with steamed milk and a hint of honey.",
+    "tags": [
+      "Hot",
+      "Iced"
+    ],
+    "image": "/images/chai-latte.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_011",
+    "category": "NON COFFEE",
+    "categoryIcon": "emoji_food_beverage",
+    "name": "Fresh Lemonade",
+    "price": 3.75,
+    "description": "Freshly squeezed lemons, a touch of cane sugar, and sparkling water.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "/images/lemonade.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_012",
+    "category": "NON COFFEE",
+    "categoryIcon": "emoji_food_beverage",
+    "name": "Matcha Lemonade",
+    "price": 5.25,
+    "description": "A vibrant twist — premium matcha swirled into fresh lemonade.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "/images/matcha-lemonade.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_013",
+    "category": "SIGNATURE",
+    "categoryIcon": "water_drop",
+    "name": "Amber Cold Brew",
+    "price": 5.5,
+    "description": "Steeped for 24 hours, topped with a smoked amber syrup cold foam.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "/images/amber-cold-brew.jpg",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_014",
+    "category": "SIGNATURE",
+    "categoryIcon": "water_drop",
+    "name": "The Roaster's Tonic",
+    "price": 6,
+    "description": "Espresso over artisanal tonic water with a twist of grapefruit peel.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "/images/roasters-tonic.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_015",
+    "category": "SIGNATURE",
+    "categoryIcon": "water_drop",
+    "name": "Salted Caramel Espresso",
+    "price": 5.75,
+    "description": "Double espresso with house-made salted caramel and steamed milk.",
+    "tags": [
+      "Hot",
+      "Iced"
+    ],
+    "image": "/images/salted-caramel.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_016",
+    "category": "SIGNATURE",
+    "categoryIcon": "water_drop",
+    "name": "Smoky Vanilla Nitro",
+    "price": 6.5,
+    "description": "Nitro cold brew infused with smoked vanilla bean. Velvety smooth.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "/images/vanilla-nitro.jpg",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_017",
+    "category": "PASTRY",
+    "categoryIcon": "bakery_dining",
+    "name": "Brutal Butter Croissant",
+    "price": 4,
+    "description": "Laminated with high-fat European butter. Shatteringly crisp outside, airy inside.",
+    "tags": [
+      "Vegan Opt"
+    ],
+    "image": "/images/croissant.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_018",
+    "category": "MODERN FOOD",
+    "categoryIcon": "restaurant_menu",
+    "name": "Cheese Cake",
+    "price": 4.25,
+    "description": "caramelized on the outside and creamy inside",
+    "tags": [
+      "Dessert"
+    ],
+    "image": "data:image/webp;base64,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",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_019",
+    "category": "PASTRY",
+    "categoryIcon": "bakery_dining",
+    "name": "Chocolate Pain Au Chocolat",
+    "price": 4.75,
+    "description": "Dark chocolate batons enveloped in flaky, butter laminated dough.",
+    "tags": [],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXK5KK4n__ZohvKsG0uy10UQA27_khnjjgKzm8oI84DQ&s=10",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_020",
+    "category": "PASTRY",
+    "categoryIcon": "bakery_dining",
+    "name": "Blueberry Muffin",
+    "price": 3.75,
+    "description": "Bursting with wild blueberries, crowned with a crunchy streusel.",
+    "tags": [
+      "Vegan"
+    ],
+    "image": "/images/blueberry-muffin.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_022",
+    "category": "MODERN FOOD",
+    "categoryIcon": "restaurant_menu",
+    "name": "Avocado Toast",
+    "price": 8.5,
+    "description": "Smashed avocado on sourdough, cherry tomatoes, microgreens, and chili flakes.",
+    "tags": [
+      "Vegan"
+    ],
+    "image": "/images/avocado-toast.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_023",
+    "category": "MODERN FOOD",
+    "categoryIcon": "restaurant_menu",
+    "name": "Truffle Mushroom Toast",
+    "price": 9.5,
+    "description": "Sautéed wild mushrooms on toasted brioche with truffle oil and parmesan.",
+    "tags": [],
+    "image": "/images/mushroom-toast.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_024",
+    "category": "MODERN FOOD",
+    "categoryIcon": "restaurant_menu",
+    "name": "Smoked Salmon Bowl",
+    "price": 11,
+    "description": "Quinoa, smoked salmon, avocado, pickled onion, sesame, and ginger dressing.",
+    "tags": [],
+    "image": "/images/salmon-bowl.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_025",
+    "category": "MODERN FOOD",
+    "categoryIcon": "restaurant_menu",
+    "name": "Caesar Salad",
+    "price": 8,
+    "description": "Crisp romaine, house-made Caesar dressing, croutons, and shaved parmesan.",
+    "tags": [
+      "Vegan Opt"
+    ],
+    "image": "/images/caesar-salad.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_026",
+    "category": "MODERN FOOD",
+    "categoryIcon": "restaurant_menu",
+    "name": "Grilled Chicken Wrap",
+    "price": 9,
+    "description": "Herb-marinated chicken, mixed greens, tomato, and garlic aioli in a flour tortilla.",
+    "tags": [],
+    "image": "/images/chicken-wrap.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": "mnu_027",
+    "category": "MODERN FOOD",
+    "categoryIcon": "restaurant_menu",
+    "name": "Pasta Aglio Olio",
+    "price": 10,
+    "description": "Spaghetti tossed in garlic-infused olive oil, chili, parsley, and toasted breadcrumbs.",
+    "tags": [
+      "Vegan"
+    ],
+    "image": "/images/pasta-aglio-olio.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "name": "Pizza",
+    "category": "MODERN FOOD",
+    "price": 13,
+    "description": "With smoke beef, mushroom, and cheeze, sosis, and bolognaise sauce",
+    "tags": [
+      "vegan"
+    ],
+    "image": "https://img-global.cpcdn.com/recipes/35517ec2df8897ab/680x781f0.5_0.5_1.0q80/roti-bolognese-pizza-mini-tanpa-ulen-foto-resep-utama.jpg",
+    "categoryIcon": "restaurant_menu",
+    "id": "mnu_mrd7yjbarkaz",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2026-07-09T08:02:42.118Z"
+  },
+  {
+    "name": "Affogato",
+    "category": "COFFEE",
+    "price": 45,
+    "description": "Italiano Coffee",
+    "tags": [
+      "Iced"
+    ],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMuIGYfXDmL_bDNhtiIMql1CM3Lh3IPS3hrgWzgQ_3sg&s=10",
+    "categoryIcon": "local_cafe",
+    "id": "mnu_mrdjo5nueetn",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2026-07-09T13:30:33.258Z"
+  },
+  {
+    "name": "The Sip Sour",
+    "category": "SIGNATURE",
+    "price": 90,
+    "description": "The Sip Sour is a refreshing signature beverage with the perfect harmony of sweet and sour flavors. Light, vibrant, and incredibly refreshing, made to brighten your day with every sip.",
+    "tags": [
+      "Iced"
+    ],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCZUj2nuIdVQWC-NL7qbzb0-2-EHPeRPoKrROTcDtigQ&s=10",
+    "categoryIcon": "water_drop",
+    "id": "mnu_mrdkkzywihcf",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2026-07-09T13:56:05.528Z"
+  },
+  {
+    "name": "Cinnamon Roll",
+    "category": "MODERN FOOD",
+    "price": 6.5,
+    "description": "A soft, fluffy pastry swirled with aromatic cinnamon and brown sugar, baked to golden perfection, and finished with a smooth, sweet glaze.",
+    "tags": [
+      "Cake"
+    ],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQphzbkBOGjeghb9pPL31EvuqfXYxtoceD0M5ydMusLem6UpzbU7Mjqi0hm&s=10",
+    "categoryIcon": "restaurant_menu",
+    "id": "mnu_mrdkuf4enx8a",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2026-07-09T14:03:25.070Z"
+  },
+  {
+    "name": "Churros",
+    "category": "MODERN FOOD",
+    "price": 2.5,
+    "description": "Golden, crispy on the outside and soft on the inside, dusted with cinnamon sugar and served fresh for a perfectly sweet treat.",
+    "tags": [
+      "Dessert"
+    ],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgLlUdG2D80qLsEaN-1iWhM48vfG7SYqOn-e9ljHfifkqkjCGlcipUghrZ&s=10",
+    "categoryIcon": "restaurant_menu",
+    "id": "mnu_mrdmegj6llxc",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2026-07-09T14:46:59.634Z"
+  },
+  {
+    "name": "Pizza Bolognaise",
+    "category": "MODERN FOOD",
+    "price": 50,
+    "description": "With cheeze, smoked beef, and bolognaise sauce",
+    "tags": [
+      "Italian Food"
+    ],
+    "image": "https://www.giallozafferano.com/images/293-29343/pizza-capricciosa_450x300.jpg",
+    "categoryIcon": "restaurant_menu",
+    "id": "mnu_mrdotkfc0x7j",
+    "bestSeller": true,
+    "available": true,
+    "createdAt": "2026-07-09T15:54:43.752Z"
+  },
+  {
+    "id": "mnu_021",
+    "category": "PASTRY",
+    "categoryIcon": "bakery_dining",
+    "name": "Cinnamon Roll",
+    "price": 4.5,
+    "description": "Soft, swirled dough with brown sugar cinnamon filling and cream cheese glaze.",
+    "tags": [],
+    "image": "/images/cinnamon-roll.jpg",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2025-01-01T08:00:00Z"
+  },
+  {
+    "name": "Tomago Croissant",
+    "category": "MODERN FOOD",
+    "price": 4.14,
+    "description": "Freshly baked buttery croissant layered with creamy tamago (Japanese egg salad), seasoned to perfection for a light yet satisfying meal.",
+    "tags": [
+      "Dessert"
+    ],
+    "image": "https://masalaeatsmiami.com/wp-content/uploads/2023/06/cover-1-of-1.jpg",
+    "categoryIcon": "restaurant_menu",
+    "id": "mnu_mre1z8tp7csb",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2026-07-09T22:03:03.661Z"
+  },
+  {
+    "name": "Cheese Cake",
+    "category": "MODERN FOOD",
+    "price": 25,
+    "description": "Caramelized on the outside and creamy inside",
+    "tags": [
+      "Dessert"
+    ],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgzdbvQzRxydhFRPAr-Jb0GxhETXS-Zn9nEySnsIoKpA&s=10",
+    "categoryIcon": "restaurant_menu",
+    "id": "mnu_mrech33a81ze",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2026-07-10T02:56:52.198Z"
+  },
+  {
+    "name": "Churros",
+    "category": "MODERN FOOD",
+    "price": 5,
+    "description": "Pastry",
+    "tags": [
+      "Pastry"
+    ],
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSU57aUINy7__Wzzh9us-x6_3mIAGTpIXkHYkKsGLgi90lrHntQSguf6E4QvKKtv9y-WvNXSnQtKovHzshD47Z5lOSMexL4K9L0ZhtvfBs&s=10",
+    "categoryIcon": "restaurant_menu",
+    "id": "mnu_mred3px0pa2q",
+    "bestSeller": false,
+    "available": true,
+    "createdAt": "2026-07-10T03:14:28.212Z"
+  }
+]
