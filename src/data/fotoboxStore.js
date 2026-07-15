@@ -1,25 +1,57 @@
-const API = "/api/fotobox";
+import { asset } from "../lib/asset";
 
-export async function saveFotobox(payload) {
-  const res = await fetch(API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("Gagal menyimpan fotobox");
-  return res.json();
+const SESSION_KEY = "app_fotobox_session";
+const DELETED_KEY = "app_fotobox_deleted";
+
+function readSession() {
+  try {
+    return JSON.parse(localStorage.getItem(SESSION_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function readDeleted() {
+  try {
+    return JSON.parse(localStorage.getItem(DELETED_KEY)) || [];
+  } catch {
+    return [];
+  }
 }
 
 export async function getFotoboxes(userId) {
-  const url = userId ? `${API}?userId=${encodeURIComponent(userId)}` : API;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Gagal memuat fotobox");
-  const data = await res.json();
-  return data.items || [];
+  let base = [];
+  try {
+    const res = await fetch(asset("fotobox.json"));
+    if (res.ok) {
+      const data = await res.json();
+      base = Array.isArray(data.items) ? data.items : Array.isArray(data) ? data : [];
+    }
+  } catch {}
+  const session = readSession();
+  const deleted = readDeleted();
+  const baseItems = base.filter((x) => !deleted.includes(x.id));
+  const sessionItems = session.filter((x) => !deleted.includes(x.id));
+  let all = [...baseItems, ...sessionItems];
+  if (userId) all = all.filter((x) => x.userId === userId);
+  return all;
+}
+
+export async function saveFotobox(payload) {
+  const item = {
+    ...payload,
+    id: "fb_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    createdAt: new Date().toISOString(),
+  };
+  const session = readSession();
+  session.unshift(item);
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  return item;
 }
 
 export async function deleteFotobox(id) {
-  const res = await fetch(`${API}/${id}`, { method: "DELETE" });
-  if (!res.ok) throw new Error("Gagal menghapus fotobox");
-  return res.json();
+  const deleted = readDeleted();
+  if (!deleted.includes(id)) deleted.push(id);
+  localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
+  return { ok: true };
 }

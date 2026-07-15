@@ -1,18 +1,28 @@
 import menuData from "./menu.json";
+import { asset } from "../lib/asset";
 
 const STORAGE_KEY = "app_menu";
 
-function seedMenu() {
-  const existing = localStorage.getItem(STORAGE_KEY);
-  if (existing) return;
-  const seed = menuData.map((m) => ({
+function ensureIds(items) {
+  return items.map((m) => ({
     ...m,
     id: m.id || "mnu_" + Math.random().toString(36).slice(2, 8),
   }));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
 }
 
-seedMenu();
+export async function syncFromServer() {
+  let items = menuData;
+  try {
+    const res = await fetch(asset("menu.json"));
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json) && json.length) items = json;
+    }
+  } catch {}
+  const seeded = ensureIds(items);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+  return seeded;
+}
 
 export function getAllMenu() {
   try {
@@ -22,38 +32,11 @@ export function getAllMenu() {
   return [];
 }
 
-export async function syncFromServer() {
-  const localItems = getAllMenu();
-  try {
-    const res = await fetch("/api/menu?pageSize=1000");
-    const json = await res.json();
-    const serverItems = Array.isArray(json.items) ? json.items : [];
-    const byId = new Map();
-    serverItems.forEach((m) => byId.set(m.id, m));
-    localItems.forEach((m) => byId.set(m.id, m));
-    const merged = Array.from(byId.values());
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-    persistToServer(merged);
-    return merged;
-  } catch {
-    return localItems;
-  }
-}
-
 export function saveAllMenu(items) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  persistToServer(items);
 }
 
-function persistToServer(items) {
-  try {
-    fetch("/api/menu", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(items),
-    }).catch(() => {});
-  } catch {}
-}
+function persistToServer() {}
 
 export function getMenuByCategory() {
   const items = getAllMenu();
