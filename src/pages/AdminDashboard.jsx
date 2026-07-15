@@ -11,7 +11,7 @@ import {
   deleteMenuItem,
   toggleBestSeller,
 } from "../data/menuStore";
-import { getFotoboxes, deleteFotobox } from "../data/fotoboxStore";
+import FotoboxGallery from "../components/FotoboxGallery";
 
 const STATUS_LABELS = {
   pending: { label: "Menunggu", color: "bg-yellow-100 text-yellow-800 border-yellow-400" },
@@ -38,22 +38,10 @@ export default function AdminDashboard() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [fotoboxes, setFotoboxes] = useState([]);
-  const [previewFoto, setPreviewFoto] = useState(null);
 
   useEffect(() => {
     syncFromServer().then(setMenuList);
-    getFotoboxes().then(setFotoboxes).catch(() => setFotoboxes([]));
   }, []);
-
-  async function handleDeleteFotobox(id) {
-    try {
-      await deleteFotobox(id);
-      setFotoboxes((prev) => prev.filter((f) => f.id !== id));
-    } catch {
-      /* ignore */
-    }
-  }
 
   if (!user || user.role !== "admin") {
     return <Navigate to="/" replace />;
@@ -275,6 +263,11 @@ export default function AdminDashboard() {
           ))}
         </div>
 
+
+        {/* ====== FOTOBOX GALLERY (ALL USERS) ====== */}
+        <div className="mt-12">
+          <FotoboxGallery isAdmin />
+        </div>
 
         {/* ====== ADD/EDIT MODAL ====== */}
         {showForm && (

@@ -153,7 +153,7 @@ export default function Reviews() {
                 Kamu harus pesan, membayar, dan menyelesaikan pesanan dulu sebelum bisa memberi ulasan.
               </p>
               <Link
-                to="#menu"
+                to="/menu"
                 className="inline-block mt-3 bg-primary text-on-primary border-2 border-on-background neu-shadow px-5 py-2 font-label-bold text-label-bold uppercase text-sm transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 Mulai Pesan

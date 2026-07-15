@@ -62,5 +62,14 @@
     "email": "fathinochavira21@gmail.com",
     "role": "user",
     "createdAt": "2026-07-10T02:50:04.703Z"
+  },
+  {
+    "id": "usr_mrm9r4fde13",
+    "username": "zhapira",
+    "password": "zhap12",
+    "name": "zhap",
+    "email": "fathinochavira21@gmail.com",
+    "role": "user",
+    "createdAt": "2026-07-15T16:02:51.049Z"
   }
 ]

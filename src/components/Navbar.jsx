@@ -47,20 +47,20 @@ export default function Navbar({ onCartOpen }) {
         </Link>
         <ul className="hidden md:flex items-center gap-lg">
           <li>
-            <a
-              href="#menu"
+            <Link
+              to="/menu"
               className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
             >
               MENU
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#story"
+            <Link
+              to="/#story"
               className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
             >
               STORY
-            </a>
+            </Link>
           </li>
           {user && (
             <>
@@ -173,20 +173,20 @@ export default function Navbar({ onCartOpen }) {
 
       {mobileOpen && (
         <div className="md:hidden border-t-2 border-on-background bg-background px-gutter py-4 flex flex-col gap-1">
-          <a
-            href="#menu"
+          <Link
+            to="/menu"
             onClick={() => setMobileOpen(false)}
             className="text-on-surface-variant font-medium hover:text-primary py-2 uppercase"
           >
             Menu
-          </a>
-          <a
-            href="#story"
+          </Link>
+          <Link
+            to="/#story"
             onClick={() => setMobileOpen(false)}
             className="text-on-surface-variant font-medium hover:text-primary py-2 uppercase"
           >
             Story
-          </a>
+          </Link>
           {user && (
             <>
               <Link

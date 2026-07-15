@@ -8,6 +8,26 @@
   100% { transform: scale(1); opacity: 0.85; }
 }
 
+@keyframes fb-float {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-10px) rotate(1.5deg); }
+}
+
+@keyframes fb-shimmer {
+  0%, 100% { box-shadow: 4px 4px 0 0 #000, 0 0 0 0 rgba(212, 175, 55, 0); }
+  50% { box-shadow: 4px 4px 0 0 #000, 0 0 24px 5px rgba(212, 175, 55, 0.75); }
+}
+
+@keyframes fb-shine {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.18) saturate(1.25); }
+}
+
+.fotobox-anim { transform-origin: center; will-change: transform, filter, box-shadow; }
+.fotobox-anim-float { animation: fb-float 3s ease-in-out infinite; }
+.fotobox-anim-shimmer { animation: fb-shimmer 2.4s ease-in-out infinite; }
+.fotobox-anim-shine { animation: fb-shine 2.2s ease-in-out infinite; }
+
 @layer utilities {
   .neu-shadow {
     box-shadow: 4px 4px 0px 0px #000000;

@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UserOrders from "./pages/UserOrders";
 import Payment from "./pages/Payment";
 import Reviews from "./pages/Reviews";
+import MenuPage from "./pages/MenuPage";
 
 function HomePage({ onCartOpen }) {
   return (
@@ -36,14 +37,34 @@ function HomePage({ onCartOpen }) {
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    if (hash) {
-      const el = document.getElementById(hash.slice(1));
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-        return;
-      }
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return;
     }
-    window.scrollTo(0, 0);
+    const id = decodeURIComponent(hash.slice(1));
+    let frame;
+    const timeouts = [];
+    let tries = 0;
+    const attempt = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView();
+        return true;
+      }
+      return false;
+    };
+    if (!attempt()) {
+      const tick = () => {
+        tries += 1;
+        if (attempt()) return;
+        if (tries < 30) timeouts.push(setTimeout(tick, 40));
+      };
+      frame = requestAnimationFrame(tick);
+    }
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      timeouts.forEach(clearTimeout);
+    };
   }, [pathname, hash]);
   return null;
 }
@@ -100,6 +121,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/menu" element={<MenuPage />} />
         </Routes>
         <Footer />
         <CartDrawer

@@ -54,7 +54,7 @@ export default function UserOrders() {
           <div className="bg-surface border-2 border-on-background neu-shadow p-8 text-center">
             <span className="material-symbols-outlined text-[56px] text-on-surface-variant" style={{ fontVariationSettings: "'FILL' 1" }}>inbox</span>
             <p className="font-body-lg text-body-lg text-on-surface-variant mt-2 mb-4">Belum ada pesanan</p>
-            <Link to="#menu" className="bg-primary text-on-primary border-2 border-on-background neu-shadow px-6 py-3 font-label-bold text-label-bold uppercase inline-block">
+            <Link to="/menu" className="bg-primary text-on-primary border-2 border-on-background neu-shadow px-6 py-3 font-label-bold text-label-bold uppercase inline-block">
               Mulai Pesan
             </Link>
           </div>
