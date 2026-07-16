@@ -3,6 +3,94 @@ import { Link } from "react-router-dom";
 import TEMPLATES, { LAYOUTS, FILTERS, CATEGORIES } from "../data/templates";
 import { useAuth } from "../context/AuthContext";
 import { getUserOrders } from "../data/orderStore";
+
+let snoopyImgCache = null;
+async function ensureSnoopyImg() {
+  if (snoopyImgCache) return snoopyImgCache;
+  try {
+    const img = new Image();
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = "/snoopy.png";
+    });
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const cx = c.getContext("2d");
+    cx.drawImage(img, 0, 0);
+    const d = cx.getImageData(0, 0, c.width, c.height);
+    const p = d.data;
+    for (let i = 0; i < p.length; i += 4) {
+      const r = p[i], g = p[i + 1], b = p[i + 2];
+      if (r > 200 && g > 190 && b > 170 && Math.abs(r - g) < 30 && Math.abs(g - b) < 30) {
+        p[i + 3] = 0;
+      }
+    }
+    cx.putImageData(d, 0, 0);
+    const out = new Image();
+    await new Promise((resolve, reject) => {
+      out.onload = resolve;
+      out.onerror = reject;
+      out.src = c.toDataURL("image/png");
+    });
+    snoopyImgCache = out;
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+function drawSnoopyImg(ctx, cx, cy, size, flipX, flipY, rot) {
+  const img = snoopyImgCache;
+  if (!img) { drawSnoopy(ctx, cx, cy, size, "sit"); return; }
+  ctx.save();
+  ctx.translate(cx, cy);
+  if (rot) ctx.rotate(rot);
+  const s = size / 1080;
+  if (flipX || flipY) ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+  ctx.drawImage(img, -540 * s, -540 * s, 1080 * s, 1080 * s);
+  ctx.restore();
+}
+
+function drawSnoopyCool(ctx, cx, cy, s) {
+  drawSnoopy(ctx, cx, cy, s, "sit");
+  ctx.save();
+  ctx.translate(cx, cy);
+  const ss = s;
+  const hR = ss * 0.38;
+
+  const spread = hR * 1.0;
+  const hs = hR * 0.2;
+  for (let i = 0; i < 4; i++) {
+    const ang = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    const hx = Math.cos(ang) * spread;
+    const hy = Math.sin(ang) * spread;
+    ctx.fillStyle = "#e53935";
+    ctx.beginPath();
+    ctx.moveTo(hx, hy + hs * 0.25);
+    ctx.bezierCurveTo(hx - hs * 0.3, hy - hs * 0.1, hx - hs * 0.1, hy - hs * 0.4, hx, hy - hs * 0.15);
+    ctx.bezierCurveTo(hx + hs * 0.1, hy - hs * 0.4, hx + hs * 0.3, hy - hs * 0.1, hx, hy + hs * 0.25);
+    ctx.fill();
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = ss * 0.02;
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < 3; i++) {
+    const ang2 = (i / 3) * Math.PI * 2;
+    const hx2 = Math.cos(ang2) * spread * 0.6;
+    const hy2 = Math.sin(ang2) * spread * 0.6;
+    ctx.fillStyle = "#fbc1d6";
+    ctx.beginPath();
+    ctx.moveTo(hx2, hy2 + hs * 0.2);
+    ctx.bezierCurveTo(hx2 - hs * 0.25, hy2 - hs * 0.08, hx2 - hs * 0.08, hy2 - hs * 0.35, hx2, hy2 - hs * 0.12);
+    ctx.bezierCurveTo(hx2 + hs * 0.08, hy2 - hs * 0.35, hx2 + hs * 0.25, hy2 - hs * 0.08, hx2, hy2 + hs * 0.2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
 import { saveFotobox } from "../data/fotoboxStore";
 import FotoboxGallery from "../components/FotoboxGallery";
 
@@ -60,6 +148,15 @@ const TEMPLATE_PADS = {
   pinterest: { top: 210, right: 56, bottom: 200, left: 56 },
   bunny: { top: 150, right: 56, bottom: 150, left: 56 },
   bakery: { top: 150, right: 56, bottom: 150, left: 56 },
+  leopard: { top: 130, right: 56, bottom: 150, left: 56 },
+  coquette: { top: 150, right: 70, bottom: 170, left: 70 },
+  leopardprint: { top: 120, right: 60, bottom: 150, left: 60 },
+  leopardkorea: { top: 150, right: 64, bottom: 160, left: 64 },
+  leopardcub: { top: 168, right: 64, bottom: 168, left: 64 },
+  zebra: { top: 140, right: 60, bottom: 150, left: 60 },
+  tiger: { top: 120, right: 60, bottom: 150, left: 60 },
+  snoopy: { top: 170, right: 64, bottom: 170, left: 64 },
+  snoopydeluxe: { top: 200, right: 56, bottom: 190, left: 56 },
 };
 
 function StepIndicator({ current }) {
@@ -594,6 +691,8 @@ export default function Fotobox() {
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
+
+    if (t.id === "snoopydeluxe") await ensureSnoopyImg();
 
     drawTemplate(ctx, w, h, t, pad, cells);
 
@@ -2898,6 +2997,786 @@ function drawTemplate(ctx, w, h, t, pad, cells) {
     ctx.font = "10px 'Comic Sans MS',cursive";
     ctx.fillStyle = t.textColor;
     ctx.fillText(new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }), cx, outerH - 8);
+  } else if (t.id === "leopard") {
+    const g = ctx.createLinearGradient(0, 0, outerW, outerH);
+    g.addColorStop(0, "#e6b35c");
+    g.addColorStop(1, "#caa14a");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    const cell = 80;
+    for (let y = -cell; y < outerH + cell; y += cell) {
+      for (let x = -cell; x < outerW + cell; x += cell) {
+        const rowIdx = Math.round(y / cell);
+        const colIdx = Math.round(x / cell);
+        const off = (rowIdx + colIdx) % 2 ? cell * 0.5 : 0;
+        const sz = 11 + 3 * Math.sin(x * 12.9 + y * 78.2);
+        drawLeopardSpot(ctx, x + off, y, sz);
+      }
+    }
+
+    ctx.strokeStyle = t.borderColor;
+    ctx.lineWidth = 14;
+    ctx.strokeRect(7, 7, outerW - 14, outerH - 14);
+    ctx.strokeStyle = "#7a4a1c";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(22, 22, outerW - 44, outerH - 44);
+
+    ctx.fillStyle = "rgba(43,26,14,0.82)";
+    roundRect(ctx, areaX, botY + 12, areaW, pad.bottom - 26, 8);
+    ctx.fill();
+
+    ctx.fillStyle = t.textColor;
+    ctx.font = "bold 40px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S", cx, botMid - 6);
+    ctx.font = "13px Inter, sans-serif";
+    ctx.fillStyle = "#ffd9a0";
+    ctx.fillText("✦ LEOPARD EDITION ✦", cx, botMid + 24);
+  } else if (t.id === "coquette") {
+    const rng = mulberry32(20240711);
+    const bw = 46;
+
+    const g = ctx.createLinearGradient(0, 0, outerW, outerH);
+    g.addColorStop(0, "#fdf5e6");
+    g.addColorStop(1, "#f0dbb8");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, outerW, outerH);
+    ctx.rect(bw, bw, outerW - 2 * bw, outerH - 2 * bw);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "#c48a3a";
+    ctx.fillRect(0, 0, outerW, outerH);
+    const sc = 60;
+    for (let y = -sc; y < outerH + sc; y += sc) {
+      for (let x = -sc; x < outerW + sc; x += sc) {
+        const off = ((Math.round(y / sc) + Math.round(x / sc)) % 2) ? sc * 0.5 : 0;
+        const sz = 10 + 4 * Math.sin(x * 3.7 + y * 5.9);
+        drawGiraffeSpot(ctx, x + off, y, sz, "#5a3a24");
+      }
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = "#8a5a44";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bw + 4, bw + 4, outerW - 2 * (bw + 4), outerH - 2 * (bw + 4));
+
+    const inX = bw + 8, inY = bw + 8;
+    const inW = outerW - 2 * inX, inH = outerH - 2 * inY;
+    ctx.strokeStyle = "rgba(255,255,255,0.85)";
+    ctx.lineWidth = 2;
+    const lr = 8;
+    ctx.beginPath();
+    for (let x = inX; x <= inX + inW; x += lr * 2) {
+      ctx.moveTo(x, inY);
+      ctx.arc(x + lr, inY, lr, Math.PI, 0, false);
+    }
+    for (let x = inX; x <= inX + inW; x += lr * 2) {
+      ctx.moveTo(x, inY + inH);
+      ctx.arc(x + lr, inY + inH, lr, Math.PI, 0, false);
+    }
+    for (let y = inY; y <= inY + inH; y += lr * 2) {
+      ctx.moveTo(inX, y);
+      ctx.arc(inX, y + lr, lr, -Math.PI / 2, Math.PI / 2, false);
+    }
+    for (let y = inY; y <= inY + inH; y += lr * 2) {
+      ctx.moveTo(inX + inW, y);
+      ctx.arc(inX + inW, y + lr, lr, -Math.PI / 2, Math.PI / 2, false);
+    }
+    ctx.stroke();
+
+    drawGiraffe(ctx, cx, bw + 26, 36);
+    drawBow(ctx, cx + 48, bw + 12, 16, "#d99aa8");
+
+    ctx.save();
+    for (let i = 0; i < 12; i++) {
+      const px = cx - 90 + i * 16;
+      const py = bw + 38 + Math.sin(i * 0.7) * 5;
+      const szLeaf = 8 + Math.sin(i * 1.3) * 2;
+      drawSafariLeaf(ctx, px, py, szLeaf, Math.sin(i * 0.7) * 0.5, i % 2 === 0 ? "#7a9e4a" : "#9aba6a");
+    }
+    ctx.restore();
+
+    ctx.fillStyle = "#5a3a24";
+    ctx.font = "italic 24px 'Segoe Script','Brush Script MT',cursive";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("wild heart", cx, topMid + 2);
+
+    const notes = ["safari", "wild ♡", "sweet", "♡", "roam", "mon cœur"];
+    (cells || []).forEach((c, i) => {
+      ctx.strokeStyle = "#c48a3a";
+      ctx.lineWidth = 4;
+      roundRect(ctx, c.x - 5, c.y - 5, c.w + 10, c.h + 10, 10);
+      ctx.stroke();
+
+      drawBow(ctx, c.x + c.w / 2, c.y - 4, 13, "#d99aa8");
+      if (i % 2 === 0) drawSafariLeaf(ctx, c.x + c.w - 6, c.y + c.h / 2, 10, 0.5, "#7a9e4a");
+      else drawGiraffeSpot(ctx, c.x + c.w - 6, c.y + c.h / 2, 6, "#8a5a28");
+
+      ctx.fillStyle = "#5a3a24";
+      ctx.font = "italic 13px 'Segoe Script','Brush Script MT',cursive";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(notes[i % notes.length], c.x + c.w / 2, c.y + c.h + 12);
+    });
+
+    const topY = (bw + areaY) / 2;
+    for (let k = 0; k < 6; k++) {
+      const px = bw + 40 + rng() * (areaW - 80);
+      if (Math.abs(px - cx) < 120) continue;
+      const kind = rng();
+      if (kind < 0.34) drawHeart(ctx, px, topY, 9 + rng() * 4, "#d99aa8");
+      else if (kind < 0.6) drawSafariLeaf(ctx, px, topY, 10, rng() * Math.PI, "#9aba6a");
+      else if (kind < 0.8) drawButterfly(ctx, px, topY, 11, "#c48a3a");
+      else drawStar(ctx, px, topY, 5, 8 + rng() * 3, 3.5);
+    }
+
+    const botYm = (botY + (outerH - bw)) / 2;
+    for (let k = 0; k < 6; k++) {
+      const px = bw + 40 + rng() * (areaW - 80);
+      if (Math.abs(px - cx) < 160) continue;
+      const kind = rng();
+      if (kind < 0.3) drawHeart(ctx, px, botYm, 9 + rng() * 4, "#d99aa8");
+      else if (kind < 0.55) drawGiraffeSpot(ctx, px, botYm, 7, "#8a5a28");
+      else if (kind < 0.78) drawSafariLeaf(ctx, px, botYm, 10, rng() * Math.PI, "#7a9e4a");
+      else drawButterfly(ctx, px, botYm, 11, "#c48a3a");
+    }
+
+    if ((cells || []).length > 1) {
+      (cells || []).forEach((c) => {
+        const isLastCol = (c.x + c.w) >= areaX + areaW - 1;
+        const isLastRow = (c.y + c.h) >= botY - 1;
+        if (!isLastCol) {
+          drawHeart(ctx, c.x + c.w + 8, c.y + c.h / 2, 6, "#d99aa8");
+          drawSafariLeaf(ctx, c.x + c.w + 8, c.y + c.h / 2, 7, 0.7, "#9aba6a");
+        }
+        if (!isLastRow) {
+          drawSafariLeaf(ctx, c.x + c.w / 2, c.y + c.h + 8, 7, -0.5, "#7a9e4a");
+        }
+      });
+    }
+
+    const rbW = 280, rbH = 48;
+    const rbX = cx - rbW / 2, rbY = botY + 30;
+    ctx.fillStyle = "#c48a3a";
+    ctx.beginPath();
+    ctx.moveTo(rbX, rbY);
+    ctx.lineTo(rbX - 24, rbY + rbH / 2);
+    ctx.lineTo(rbX, rbY + rbH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(rbX + rbW, rbY);
+    ctx.lineTo(rbX + rbW + 24, rbY + rbH / 2);
+    ctx.lineTo(rbX + rbW, rbY + rbH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#d99aa8";
+    roundRect(ctx, rbX, rbY, rbW, rbH, 8);
+    ctx.fill();
+    ctx.fillStyle = "#fffdf8";
+    ctx.font = "italic 24px 'Segoe Script','Brush Script MT',cursive";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("coquette safari ♡", cx, rbY + rbH / 2);
+
+    drawGiraffeSpot(ctx, cx - rbW / 2 - 10, rbY + rbH / 2, 9, "#5a3a24");
+    drawGiraffeSpot(ctx, cx + rbW / 2 + 10, rbY + rbH / 2, 9, "#5a3a24");
+  } else if (t.id === "leopardprint") {
+    ctx.fillStyle = "#e9d4ad";
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    const rng = mulberry32(99173);
+    const tile = 96;
+    for (let y = -tile; y < outerH + tile; y += tile) {
+      for (let x = -tile; x < outerW + tile; x += tile) {
+        const rowIdx = Math.round(y / tile);
+        const colIdx = Math.round(x / tile);
+        const off = (rowIdx + colIdx) % 2 ? tile * 0.5 : 0;
+        const jx = (rng() - 0.5) * tile * 0.3;
+        const jy = (rng() - 0.5) * tile * 0.3;
+        const sz = tile * (0.32 + rng() * 0.08);
+        if (rng() < 0.18) {
+          ctx.fillStyle = rng() < 0.5 ? "#1a1009" : "#3a2412";
+          ctx.beginPath();
+          ctx.ellipse(x + off + jx, y + jy, sz * 0.5, sz * 0.4, rng() * Math.PI, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          drawLeopardRosette(ctx, x + off + jx, y + jy, sz, rng);
+        }
+      }
+    }
+
+    ctx.strokeStyle = "#2b1a0e";
+    ctx.lineWidth = 10;
+    ctx.strokeRect(5, 5, outerW - 10, outerH - 10);
+    ctx.strokeStyle = "#e9d4ad";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(14, 14, outerW - 28, outerH - 28);
+
+    ctx.fillStyle = "rgba(43,26,14,0.9)";
+    roundRect(ctx, cx - 110, botY + 12, 220, pad.bottom - 26, 8);
+    ctx.fill();
+    ctx.fillStyle = "#f3e6cc";
+    ctx.font = "bold 22px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S", cx, botMid - 4);
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillStyle = "#d9c19a";
+    ctx.fillText("LEOPARD PRINT", cx, botMid + 18);
+  } else if (t.id === "leopardkorea") {
+    const bw = 46;
+    const rngB = mulberry32(7321);
+
+    ctx.fillStyle = "#fbf3e6";
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, outerW, outerH);
+    ctx.rect(bw, bw, outerW - 2 * bw, outerH - 2 * bw);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "#c8a06a";
+    ctx.fillRect(0, 0, outerW, outerH);
+    const sc = 70;
+    for (let y = -sc; y < outerH + sc; y += sc) {
+      for (let x = -sc; x < outerW + sc; x += sc) {
+        const off = ((Math.round(y / sc) + Math.round(x / sc)) % 2) ? sc * 0.5 : 0;
+        const jx = (rngB() - 0.5) * sc * 0.25;
+        const jy = (rngB() - 0.5) * sc * 0.25;
+        drawLeopardRosette(ctx, x + off + jx, y + jy, sc * 0.34, rngB);
+      }
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = "#8a5a44";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bw + 4, bw + 4, outerW - 2 * (bw + 4), outerH - 2 * (bw + 4));
+
+    const tapes = ["#e6b8a2", "#c9b48a", "#d9c0a0", "#b8c9a0"];
+    const notes = ["our memory", "best day ♡", "saranghae", "pretty ♡", "lovely", "sweet"];
+    (cells || []).forEach((c, i) => {
+      drawRippedPanel(ctx, c.x - 9, c.y - 10, c.w + 18, c.h + 28, "#fffaf0");
+      drawWashiTape(ctx, c.x + 12, c.y - 6, 46, 18, -0.35, tapes[i % tapes.length]);
+      drawWashiTape(ctx, c.x + c.w - 12, c.y - 6, 46, 18, 0.35, tapes[(i + 2) % tapes.length]);
+
+      ctx.strokeStyle = "#b08968";
+      ctx.lineWidth = 4;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 8);
+      ctx.stroke();
+
+      drawBow(ctx, c.x + c.w / 2, c.y - 6, 13, "#8a5a44");
+      drawPaw(ctx, c.x + c.w - 6, c.y + c.h + 4, 9, "#8a5a44");
+
+      ctx.fillStyle = "#6b4a32";
+      ctx.font = "italic 14px 'Segoe Script','Brush Script MT',cursive";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(notes[i % notes.length], c.x + c.w / 2, c.y + c.h + 16);
+    });
+
+    if ((cells || []).length > 1) {
+      (cells || []).forEach((c) => {
+        const isLastCol = (c.x + c.w) >= areaX + areaW - 1;
+        const isLastRow = (c.y + c.h) >= botY - 1;
+        if (!isLastCol) drawStar(ctx, c.x + c.w + 8, c.y + c.h / 2, 5, 6, 2.5);
+        if (!isLastRow) drawSticker(ctx, c.x + c.w / 2, c.y + c.h + 8, 8, "#e6b8a2");
+      });
+    }
+
+    drawBow(ctx, cx, bw + 8, 24, "#8a5a44");
+    ctx.fillStyle = "#6b4a32";
+    ctx.font = "italic 24px 'Segoe Script','Brush Script MT',cursive";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("our memory ✎", cx, topMid - 4);
+
+    const rng = mulberry32(5150);
+    const topY = (bw + areaY) / 2;
+    for (let k = 0; k < 7; k++) {
+      const px = bw + 36 + rng() * (areaW - 72);
+      if (Math.abs(px - cx) < 110) continue;
+      const kind = rng();
+      if (kind < 0.3) drawStar(ctx, px, topY, 5, 9 + rng() * 3, 3.5);
+      else if (kind < 0.55) drawSticker(ctx, px, topY, 10, "#e6b8a2");
+      else if (kind < 0.78) drawHeart(ctx, px, topY, 8 + rng() * 3, "#d98aa8");
+      else drawPaw(ctx, px, topY, 9, "#8a5a44");
+    }
+
+    const botYm = (botY + (outerH - bw)) / 2;
+    for (let k = 0; k < 7; k++) {
+      const px = bw + 36 + rng() * (areaW - 72);
+      if (Math.abs(px - cx) < 150) continue;
+      const kind = rng();
+      if (kind < 0.28) drawStar(ctx, px, botYm, 5, 9 + rng() * 3, 3.5);
+      else if (kind < 0.52) drawSticker(ctx, px, botYm, 10, "#c9b48a");
+      else if (kind < 0.76) drawHeart(ctx, px, botYm, 8 + rng() * 3, "#d98aa8");
+      else drawPaw(ctx, px, botYm, 9, "#8a5a44");
+    }
+
+    ctx.fillStyle = "rgba(107,74,50,0.9)";
+    roundRect(ctx, cx - 120, botY + 14, 240, pad.bottom - 30, 8);
+    ctx.fill();
+    ctx.fillStyle = "#fbf3e6";
+    ctx.font = "bold 24px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S ♡", cx, botMid - 2);
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillStyle = "#e6d6bf";
+    ctx.fillText("LEOPARD · KOREAN PHOTOBOOTH", cx, botMid + 20);
+
+    drawWashiTape(ctx, cx - 120, botY + 14, 40, 16, -0.3, "#e6b8a2");
+    drawWashiTape(ctx, cx + 120, botY + 14, 40, 16, 0.3, "#c9b48a");
+  } else if (t.id === "leopardcub") {
+    const bw = 44;
+    const g = ctx.createLinearGradient(0, 0, outerW, outerH);
+    g.addColorStop(0, "#fff4e8");
+    g.addColorStop(1, "#ffe7ef");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, outerW, outerH);
+    ctx.rect(bw, bw, outerW - 2 * bw, outerH - 2 * bw);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "#f6dcc4";
+    ctx.fillRect(0, 0, outerW, outerH);
+    const rngB = mulberry32(4242);
+    const sc = 60;
+    for (let y = -sc; y < outerH + sc; y += sc) {
+      for (let x = -sc; x < outerW + sc; x += sc) {
+        const off = ((Math.round(y / sc) + Math.round(x / sc)) % 2) ? sc * 0.5 : 0;
+        drawLeopardSpot(ctx, x + off, y, 8 + rngB() * 2, "#d9a86f");
+      }
+    }
+    ctx.restore();
+    ctx.strokeStyle = "#e7b98f";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(bw + 3, bw + 3, outerW - 2 * (bw + 3), outerH - 2 * (bw + 3));
+
+    const cubTopY = (bw + areaY) / 2 + 10;
+    drawSafariLeaf(ctx, cx - 64, cubTopY - 8, 16, -0.6, "#a9cf8f");
+    drawSafariLeaf(ctx, cx + 64, cubTopY - 8, 16, 0.6, "#a9cf8f");
+    drawBabyCub(ctx, cx, cubTopY, 52, "peek");
+
+    const poses = ["sit", "heart", "sleep", "peek", "sit", "heart"];
+    const notes = ["cubs!", "so cute ♡", "good night", "peekaboo", "love you", "sleepy"];
+    (cells || []).forEach((c, i) => {
+      ctx.strokeStyle = "#e7b98f";
+      ctx.lineWidth = 4;
+      roundRect(ctx, c.x - 5, c.y - 5, c.w + 10, c.h + 10, 10);
+      ctx.stroke();
+      drawBabyCub(ctx, c.x + 15, c.y - 6, 16, poses[i % poses.length]);
+      drawBow(ctx, c.x + c.w - 10, c.y + 12, 12, "#f3a8c4");
+      drawPaw(ctx, c.x + c.w / 2, c.y + c.h + 5, 8, "#e7b98f");
+      ctx.fillStyle = "#a86b4a";
+      ctx.font = "italic 13px 'Segoe Script','Brush Script MT',cursive";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(notes[i % notes.length], c.x + c.w / 2, c.y + c.h + 15);
+    });
+
+    if ((cells || []).length > 1) {
+      (cells || []).forEach((c) => {
+        const isLastCol = (c.x + c.w) >= areaX + areaW - 1;
+        const isLastRow = (c.y + c.h) >= botY - 1;
+        if (!isLastCol) drawStar(ctx, c.x + c.w + 8, c.y + c.h / 2, 5, 6, 2.5);
+        if (!isLastRow) drawSticker(ctx, c.x + c.w / 2, c.y + c.h + 8, 8, "#f3a8c4");
+      });
+    }
+
+    const rng = mulberry32(8086);
+    const topY = (bw + areaY) / 2;
+    for (let k = 0; k < 6; k++) {
+      const px = bw + 34 + rng() * (areaW - 68);
+      if (Math.abs(px - cx) < 70) continue;
+      const kind = rng();
+      if (kind < 0.3) drawStar(ctx, px, topY, 5, 9 + rng() * 3, 3.5);
+      else if (kind < 0.5) drawSticker(ctx, px, topY, 9, "#f3a8c4");
+      else if (kind < 0.7) drawPaw(ctx, px, topY, 8, "#e7b98f");
+      else drawSafariLeaf(ctx, px, topY, 12, rng() * Math.PI, "#a9cf8f");
+    }
+
+    const botYm = (botY + (outerH - bw)) / 2;
+    for (let k = 0; k < 6; k++) {
+      const px = bw + 34 + rng() * (areaW - 68);
+      if (Math.abs(px - cx) < 140) continue;
+      const kind = rng();
+      if (kind < 0.3) drawStar(ctx, px, botYm, 5, 9 + rng() * 3, 3.5);
+      else if (kind < 0.5) drawSticker(ctx, px, botYm, 9, "#f3c6d6");
+      else if (kind < 0.7) drawPaw(ctx, px, botYm, 8, "#e7b98f");
+      else drawSafariLeaf(ctx, px, botYm, 12, rng() * Math.PI, "#a9cf8f");
+    }
+
+    drawBabyCub(ctx, bw + 26, outerH - bw - 26, 22, "sleep");
+    drawBabyCub(ctx, outerW - bw - 26, outerH - bw - 26, 22, "heart");
+
+    ctx.fillStyle = "rgba(168,107,74,0.92)";
+    roundRect(ctx, cx - 120, botY + 14, 240, pad.bottom - 30, 10);
+    ctx.fill();
+    ctx.fillStyle = "#fff4e8";
+    ctx.font = "bold 24px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S ♡", cx, botMid - 2);
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillStyle = "#ffe1ec";
+    ctx.fillText("BABY LEOPARD CUBS", cx, botMid + 20);
+  } else if (t.id === "zebra") {
+    drawZebraFur(ctx, outerW, outerH);
+
+    ctx.strokeStyle = "#111111";
+    ctx.lineWidth = 10;
+    ctx.strokeRect(5, 5, outerW - 10, outerH - 10);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(13, 13, outerW - 26, outerH - 26);
+
+    (cells || []).forEach((c) => {
+      ctx.fillStyle = "#ffffff";
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 6);
+      ctx.fill();
+      ctx.strokeStyle = "#111111";
+      ctx.lineWidth = 3;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 6);
+      ctx.stroke();
+    });
+
+    ctx.fillStyle = "rgba(17,17,17,0.9)";
+    roundRect(ctx, cx - 110, botY + 12, 220, pad.bottom - 26, 8);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 22px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S", cx, botMid - 4);
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillStyle = "#e6e6e6";
+    ctx.fillText("ZEBRA", cx, botMid + 18);
+  } else if (t.id === "tiger") {
+    drawTigerFur(ctx, outerW, outerH);
+
+    ctx.strokeStyle = "#1a0f08";
+    ctx.lineWidth = 10;
+    ctx.strokeRect(5, 5, outerW - 10, outerH - 10);
+    ctx.strokeStyle = "#f6e6c8";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(13, 13, outerW - 26, outerH - 26);
+
+    (cells || []).forEach((c) => {
+      ctx.fillStyle = "#f6e6c8";
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 6);
+      ctx.fill();
+      ctx.strokeStyle = "#1a0f08";
+      ctx.lineWidth = 3;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 6);
+      ctx.stroke();
+    });
+
+    ctx.fillStyle = "rgba(26,15,8,0.9)";
+    roundRect(ctx, cx - 110, botY + 12, 220, pad.bottom - 26, 8);
+    ctx.fill();
+    ctx.fillStyle = "#f6e6c8";
+    ctx.font = "bold 22px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S", cx, botMid - 4);
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillStyle = "#e9c79a";
+    ctx.fillText("TIGER", cx, botMid + 18);
+  } else if (t.id === "snoopy") {
+    const bw = 44;
+    ctx.fillStyle = "#fffcf5";
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, outerW, outerH);
+    ctx.rect(bw, bw, outerW - 2 * bw, outerH - 2 * bw);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "#c5e3f6";
+    ctx.fillRect(0, 0, outerW, outerH);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    const lr = 9;
+    const inX = bw + 4, inY = bw + 4;
+    const inW = outerW - 2 * inX, inH = outerH - 2 * inY;
+    ctx.beginPath();
+    for (let x = inX; x <= inX + inW; x += lr * 2) {
+      ctx.moveTo(x, inY);
+      ctx.arc(x + lr, inY, lr, Math.PI, 0, false);
+    }
+    for (let x = inX; x <= inX + inW; x += lr * 2) {
+      ctx.moveTo(x, inY + inH);
+      ctx.arc(x + lr, inY + inH, lr, Math.PI, 0, false);
+    }
+    for (let y = inY; y <= inY + inH; y += lr * 2) {
+      ctx.moveTo(inX, y);
+      ctx.arc(inX, y + lr, lr, -Math.PI / 2, Math.PI / 2, false);
+    }
+    for (let y = inY; y <= inY + inH; y += lr * 2) {
+      ctx.moveTo(inX + inW, y);
+      ctx.arc(inX + inW, y + lr, lr, -Math.PI / 2, Math.PI / 2, false);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.strokeStyle = "#5a6ebd";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bw + 3, bw + 3, outerW - 2 * (bw + 3), outerH - 2 * (bw + 3));
+
+    const topCenter = (bw + areaY) / 2;
+    drawSnoopy(ctx, cx - 40, topCenter + 8, 46, "sit");
+    drawWoodstock(ctx, cx + 44, topCenter - 10, 22);
+    drawDaisy(ctx, cx - 100, topCenter - 2, 15);
+    drawHeart(ctx, cx - 102, topCenter + 30, 10, "#fbc1d6");
+    drawDaisy(ctx, cx + 98, topCenter - 2, 15);
+    drawHeart(ctx, cx + 102, topCenter + 30, 10, "#fbc1d6");
+
+    const rng = mulberry32(1212);
+    for (let k = 0; k < 5; k++) {
+      const px = bw + 28 + rng() * (areaW - 56);
+      if (Math.abs(px - cx) < 100) continue;
+      const kind = rng();
+      if (kind < 0.28) drawDaisy(ctx, px, topCenter + 4, 12);
+      else if (kind < 0.50) drawHeart(ctx, px, topCenter + 8, 10 + rng() * 4, "#fbc1d6");
+      else if (kind < 0.70) drawPaw(ctx, px, topCenter + 6, 9, "#c5e3f6");
+      else drawStar(ctx, px, topCenter + 6, 5, 10 + rng() * 3, 3.5);
+    }
+
+    const notes = ["best day ♡", "snoopy!", "good vibes", "sweet", "yay!", "lovely ♡"];
+    const tapes = ["#c5e3f6", "#fbc1d6", "#fee89e", "#c5e3f6"];
+    (cells || []).forEach((c, i) => {
+      drawRippedPanel(ctx, c.x - 9, c.y - 10, c.w + 18, c.h + 28, "#ffffff");
+      drawWashiTape(ctx, c.x + 12, c.y - 6, 40, 16, -0.35, tapes[i % tapes.length]);
+      drawWashiTape(ctx, c.x + c.w - 12, c.y - 6, 40, 16, 0.35, tapes[(i + 2) % tapes.length]);
+
+      ctx.fillStyle = "#fffcf5";
+      roundRect(ctx, c.x - 5, c.y - 5, c.w + 10, c.h + 10, 8);
+      ctx.fill();
+      ctx.strokeStyle = "#5a6ebd";
+      ctx.lineWidth = 3;
+      roundRect(ctx, c.x - 5, c.y - 5, c.w + 10, c.h + 10, 8);
+      ctx.stroke();
+
+      drawPaw(ctx, c.x + 10, c.y + 8, 9, "#5a6ebd");
+      drawHeart(ctx, c.x + c.w - 10, c.y + c.h - 6, 7, "#fbc1d6");
+
+      ctx.fillStyle = "#5a6ebd";
+      ctx.font = "italic 13px 'Segoe Script','Brush Script MT',cursive";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(notes[i % notes.length], c.x + c.w / 2, c.y + c.h + 15);
+    });
+
+    if ((cells || []).length > 1) {
+      (cells || []).forEach((c) => {
+        const isLastCol = (c.x + c.w) >= areaX + areaW - 1;
+        const isLastRow = (c.y + c.h) >= botY - 1;
+        if (!isLastCol) drawStar(ctx, c.x + c.w + 8, c.y + c.h / 2, 5, 6, 2.5);
+        if (!isLastRow) drawSticker(ctx, c.x + c.w / 2, c.y + c.h + 8, 8, "#fee89e");
+      });
+    }
+
+    for (let k = 0; k < 7; k++) {
+      const px = bw + 28 + rng() * (areaW - 56);
+      if (Math.abs(px - cx) < 120) continue;
+      const kind = rng();
+      if (kind < 0.25) drawDaisy(ctx, px, botMid, 12);
+      else if (kind < 0.45) drawHeart(ctx, px, botMid, 10 + rng() * 4, "#fbc1d6");
+      else if (kind < 0.63) drawPaw(ctx, px, botMid, 9, "#c5e3f6");
+      else if (kind < 0.80) drawStar(ctx, px, botMid, 5, 10 + rng() * 3, 3.5);
+      else drawSticker(ctx, px, botMid, 10, "#fee89e");
+    }
+
+    drawDogHouse(ctx, bw + 16, outerH - bw - 38, 36);
+    drawWoodstock(ctx, bw + 54, outerH - bw - 56, 18);
+    drawSnoopy(ctx, bw + 80, outerH - bw - 34, 28, "sit");
+
+    drawSnoopy(ctx, areaX + areaW - 40, outerH - bw - 34, 26, "sit");
+    drawWoodstock(ctx, areaX + areaW - 68, outerH - bw - 52, 14);
+    drawDaisy(ctx, areaX + areaW - 20, outerH - bw - 12, 9);
+
+    ctx.fillStyle = "#5a6ebd";
+    roundRect(ctx, cx - 120, botY + 14, 240, pad.bottom - 30, 10);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 22px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S", cx, botMid - 2);
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillStyle = "#c5e3f6";
+    ctx.fillText("SNOOPY PHOTOBOOTH", cx, botMid + 20);
+    drawPaw(ctx, cx - 128, botY + 14, 11, "#fbc1d6");
+    drawDaisy(ctx, cx + 128, botY + 14, 12);
+  } else if (t.id === "snoopydeluxe") {
+    const bw = 42;
+    ctx.fillStyle = "#fcf8f0";
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, outerW, outerH);
+    ctx.rect(bw, bw, outerW - 2 * bw, outerH - 2 * bw);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "#eaf6fa";
+    ctx.fillRect(0, 0, outerW, outerH);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2.5;
+    const lr = 10;
+    const inX = bw + 5, inY = bw + 5;
+    const inW = outerW - 2 * inX, inH = outerH - 2 * inY;
+    ctx.beginPath();
+    for (let x = inX; x <= inX + inW; x += lr * 2) {
+      ctx.moveTo(x, inY);
+      ctx.arc(x + lr, inY, lr, Math.PI, 0);
+    }
+    for (let x = inX; x <= inX + inW; x += lr * 2) {
+      ctx.moveTo(x, inY + inH);
+      ctx.arc(x + lr, inY + inH, lr, Math.PI, 0);
+    }
+    for (let y = inY; y <= inY + inH; y += lr * 2) {
+      ctx.moveTo(inX, y);
+      ctx.arc(inX, y + lr, lr, -Math.PI / 2, Math.PI / 2);
+    }
+    for (let y = inY; y <= inY + inH; y += lr * 2) {
+      ctx.moveTo(inX + inW, y);
+      ctx.arc(inX + inW, y + lr, lr, -Math.PI / 2, Math.PI / 2);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.strokeStyle = "#5a6ebd";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(bw + 4, bw + 4, outerW - 2 * (bw + 4), outerH - 2 * (bw + 4));
+
+    const rng = mulberry32(9876);
+    const topZone = (bw + areaY) / 2;
+
+    drawCloud(ctx, bw - 10, bw - 5, 32);
+    drawCloud(ctx, outerW - bw - 30, bw - 5, 28);
+    drawWoodstock(ctx, outerW - bw - 12, topZone + 32, 20);
+    drawWoodstock(ctx, cx + 150, topZone - 20, 18);
+
+    drawRibbon(ctx, cx - 80, topZone - 8, 160, 22, "#fbc1d6");
+    ctx.fillStyle = "#5a6ebd";
+    ctx.font = "bold 13px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("SNOOPY DELUXE", cx, topZone + 3);
+
+    for (let k = 0; k < 3; k++) {
+      const px = bw + 20 + rng() * (areaW - 40);
+      const py = bw + 10 + rng() * (topZone - bw + 12);
+      if (Math.abs(px - cx) < 60) continue;
+      const kind = rng();
+      if (kind < 0.3) drawSparkle(ctx, px, py, 7 + rng() * 4, "#fdd835");
+      else if (kind < 0.55) drawHeart(ctx, px, py, 6 + rng() * 3, "#fbc1d6");
+      else if (kind < 0.75) drawStar(ctx, px, py, 5, 7 + rng() * 3, 2.5);
+      else drawDogBone(ctx, px, py, 8 + rng() * 3, "#fffcf5");
+    }
+
+    const tapes = ["#c5e3f6", "#fbc1d6", "#fee89e", "#e8d5f5", "#c8e6c9"];
+    (cells || []).forEach((c, i) => {
+      drawRippedPanel(ctx, c.x - 12, c.y - 14, c.w + 24, c.h + 40, "#ffffff");
+      drawWashiTape(ctx, c.x + 14, c.y - 10, 44, 18, -0.3, tapes[i % tapes.length]);
+      drawWashiTape(ctx, c.x + c.w - 14, c.y - 10, 44, 18, 0.3, tapes[(i + 2) % tapes.length]);
+
+      ctx.fillStyle = "#fffcf5";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = "#c5e3f6";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, c.x - 2, c.y - 2, c.w + 4, c.h + 4, 5);
+      ctx.stroke();
+
+      if (i % 2 === 0) {
+        drawHeart(ctx, c.x + 14, c.y + 12, 9, "#fbc1d6");
+        drawDogBone(ctx, c.x + c.w - 14, c.y + 10, 6, "#fffcf5");
+      } else {
+        drawPaw(ctx, c.x + 14, c.y + 12, 9, "#c5e3f6");
+        drawPaperClip(ctx, c.x + c.w - 14, c.y + 12, 10, 0.3);
+      }
+      drawSparkle(ctx, c.x + c.w / 2, c.y + 8, 6, "#fdd835");
+
+      if (i === 0) drawWoodstock(ctx, c.x + c.w / 2, c.y + c.h + 12, 12);
+      else drawDogBone(ctx, c.x + c.w / 2, c.y + c.h + 10, 7, "#fffcf5");
+
+      ctx.fillStyle = "#5a6ebd";
+      ctx.font = "italic 12px 'Segoe Script','Brush Script MT',cursive";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const notes = ["sweet ♡", "snoopy!", "lovely", "best day", "cute!", "dream"];
+      ctx.fillText(notes[i % notes.length], c.x + c.w / 2, c.y + c.h + 22);
+    });
+
+    if ((cells || []).length > 1) {
+      (cells || []).forEach((c) => {
+        const isLastCol = (c.x + c.w) >= areaX + areaW - 1;
+        const isLastRow = (c.y + c.h) >= botY - 1;
+        if (!isLastCol) {
+          drawDaisy(ctx, c.x + c.w + 6, c.y + c.h / 2, 9);
+          drawSparkle(ctx, c.x + c.w + 6, c.y + c.h / 2 - 14, 6, "#fdd835");
+        }
+        if (!isLastRow) {
+          drawHeart(ctx, c.x + c.w / 2, c.y + c.h + 6, 8, "#fbc1d6");
+          drawStar(ctx, c.x + c.w / 2 + 18, c.y + c.h + 6, 5, 7, 3);
+          drawPaperClip(ctx, c.x + c.w / 2 - 18, c.y + c.h + 6, 8, -0.2);
+        }
+      });
+    }
+
+    for (let k = 0; k < 5; k++) {
+      const px = bw + 20 + rng() * (areaW - 40);
+      const py = botMid - 8 + rng() * 18;
+      if (Math.abs(px - cx) < 100) continue;
+      const kind = rng();
+      if (kind < 0.2) drawCloud(ctx, px, py, 18 + rng() * 8);
+      else if (kind < 0.4) drawDaisy(ctx, px, py, 10 + rng() * 4);
+      else if (kind < 0.55) drawHeart(ctx, px, py, 7 + rng() * 4, "#fbc1d6");
+      else if (kind < 0.7) drawSparkle(ctx, px, py, 6 + rng() * 4, "#fdd835");
+      else if (kind < 0.85) drawDogBone(ctx, px, py, 7 + rng() * 3, "#fffcf5");
+      else drawDoodle(ctx, px, py, 10 + rng() * 5, "#5a6ebd");
+    }
+
+    drawSnoopyImg(ctx, outerW - 120, botMid - 14, 200);
+    drawWoodstock(ctx, outerW - 220, botMid - 60, 24);
+
+    drawCloud(ctx, bw + 100, outerH - bw - 40, 24);
+    drawCloud(ctx, areaX + areaW - 160, outerH - bw - 50, 26);
+    drawDaisy(ctx, bw + 120, outerH - bw - 8, 11);
+    drawDaisy(ctx, areaX + areaW - 130, outerH - bw - 8, 10);
+    drawSparkle(ctx, bw + 140, outerH - bw - 38, 8, "#fdd835");
+    drawSparkle(ctx, areaX + areaW - 50, outerH - bw - 44, 7, "#fdd835");
+    drawHeart(ctx, bw + 160, outerH - bw - 18, 9, "#fbc1d6");
+    drawHeart(ctx, areaX + areaW - 110, outerH - bw - 18, 9, "#fbc1d6");
+
+    drawRibbon(ctx, cx - 110, botY + 16, 220, 22, "#c5e3f6");
+    ctx.fillStyle = "#5a6ebd";
+    ctx.font = "bold 12px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AUTENTIC'S ☆ SNOOPY", cx, botY + 28);
+
+    drawPaw(ctx, cx - 145, botY + 16, 13, "#fbc1d6");
+    drawPaw(ctx, cx + 145, botY + 16, 13, "#fbc1d6");
+    drawDogBone(ctx, cx - 145, botY + 36, 8, "#fffcf5");
+    drawDogBone(ctx, cx + 145, botY + 36, 8, "#fffcf5");
+    drawSparkle(ctx, cx - 130, botY + 28, 7, "#fdd835");
+    drawSparkle(ctx, cx + 130, botY + 28, 7, "#fdd835");
   }
   ctx.restore();
 }
@@ -3622,5 +4501,1165 @@ function drawMilk(ctx, x, y, s) {
   ctx.beginPath();
   ctx.arc(x, y + s * 0.38, s * 0.2, 0.15 * Math.PI, 0.85 * Math.PI);
   ctx.stroke();
+  ctx.restore();
+}
+
+function drawLeopardSpot(ctx, x, y, s, color = "#2b1a0e") {
+  ctx.save();
+  ctx.fillStyle = color;
+  const pts = 5;
+  for (let i = 0; i < pts; i++) {
+    const a = (i / pts) * Math.PI * 2 + 0.3;
+    const px = x + Math.cos(a) * s * 0.55;
+    const py = y + Math.sin(a) * s * 0.55;
+    ctx.beginPath();
+    ctx.ellipse(px, py, s * 0.42, s * 0.3, a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawLeopardRosette(ctx, x, y, s, rng) {
+  ctx.save();
+  ctx.translate(x, y);
+  const blobs = 5 + Math.floor(rng() * 2);
+  for (let i = 0; i < blobs; i++) {
+    const a = (i / blobs) * Math.PI * 2 + rng() * 0.6;
+    const dist = s * (0.55 + rng() * 0.2);
+    const bx = Math.cos(a) * dist;
+    const by = Math.sin(a) * dist;
+    const bw = s * (0.45 + rng() * 0.35);
+    const bh = bw * (0.5 + rng() * 0.4);
+    ctx.fillStyle = rng() < 0.4 ? "#1a1009" : "#3a2412";
+    ctx.beginPath();
+    ctx.ellipse(bx, by, bw, bh, a + rng() * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (rng() < 0.6) {
+    ctx.fillStyle = "#1a1009";
+    ctx.beginPath();
+    ctx.arc(0, 0, s * 0.18, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawZebraFur(ctx, w, h) {
+  ctx.save();
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  const spacing = 64;
+  const stripeW = spacing * 0.42;
+  const wob = 12;
+  const ang = -0.3;
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate(ang);
+  const diag = Math.ceil(Math.sqrt(w * w + h * h)) + spacing;
+  const half = diag / 2;
+  ctx.fillStyle = "#111111";
+  for (let x = -diag; x <= diag; x += spacing) {
+    const phase = x * 0.01;
+    ctx.beginPath();
+    for (let y = -half; y <= half; y += 6) {
+      const xx = x + Math.sin(y * 0.03 + phase) * wob;
+      if (y === -half) ctx.moveTo(xx, y);
+      else ctx.lineTo(xx, y);
+    }
+    for (let y = half; y >= -half; y -= 6) {
+      const xx = x + stripeW + Math.sin(y * 0.03 + phase + 1.5) * wob;
+      ctx.lineTo(xx, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawTigerFur(ctx, w, h) {
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, "#e89a33");
+  g.addColorStop(0.5, "#e0932f");
+  g.addColorStop(1, "#d9821f");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.save();
+  for (let i = 0; i < 16; i++) {
+    const mx = (i * 137) % w;
+    const my = (i * 211) % h;
+    const r = 70 + (i % 5) * 28;
+    const rg = ctx.createRadialGradient(mx, my, 0, mx, my, r);
+    rg.addColorStop(0, "rgba(255,214,150,0.10)");
+    rg.addColorStop(1, "rgba(255,214,150,0)");
+    ctx.fillStyle = rg;
+    ctx.fillRect(mx - r, my - r, r * 2, r * 2);
+  }
+  ctx.restore();
+
+  const spacing = 56;
+  for (let x = -spacing; x <= w + spacing; x += spacing) {
+    const phase = x * 0.013;
+    drawTigerStripe(ctx, x, phase, w, h, 1);
+    if (Math.abs(Math.sin(x * 0.06 + 1.3)) > 0.55) {
+      drawTigerStripe(ctx, x + spacing * 0.5, phase + 2, w, h, 0.42);
+    }
+  }
+}
+
+function drawTigerStripe(ctx, x, phase, w, h, scale) {
+  const wob = 13;
+  const baseW = (16 + 6 * Math.sin(x * 0.04)) * scale;
+  const step = 6;
+  const taperAt = (y) => Math.sin((y / (h + 20)) * Math.PI);
+  ctx.fillStyle = "#160c06";
+  ctx.beginPath();
+  for (let y = -10; y <= h + 10; y += step) {
+    const ww = baseW * (0.25 + 0.75 * taperAt(y));
+    const cx = x + Math.sin(y * 0.022 + phase) * wob + Math.sin(y * 0.07 + phase) * 4;
+    const xx = cx - ww;
+    if (y === -10) ctx.moveTo(xx, y);
+    else ctx.lineTo(xx, y);
+  }
+  for (let y = h + 10; y >= -10; y -= step) {
+    const ww = baseW * (0.25 + 0.75 * taperAt(y));
+    const cx = x + Math.sin(y * 0.022 + phase) * wob + Math.sin(y * 0.07 + phase) * 4;
+    const xx = cx + ww;
+    ctx.lineTo(xx, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha = 0.14;
+  ctx.strokeStyle = "#ffd99a";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let y = -10; y <= h + 10; y += step) {
+    const ww = baseW * (0.25 + 0.75 * taperAt(y));
+    const cx = x + Math.sin(y * 0.022 + phase) * wob + Math.sin(y * 0.07 + phase) * 4;
+    const xx = cx + ww + 3;
+    if (y === -10) ctx.moveTo(xx, y);
+    else ctx.lineTo(xx, y);
+  }
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function drawCloud(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "#ffffff";
+  ctx.globalAlpha = 0.7;
+  ctx.beginPath();
+  ctx.arc(0, 0, s * 0.5, 0, Math.PI * 2);
+  ctx.arc(s * 0.5, -s * 0.15, s * 0.4, 0, Math.PI * 2);
+  ctx.arc(s * 0.9, 0, s * 0.45, 0, Math.PI * 2);
+  ctx.arc(s * 0.45, s * 0.1, s * 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawSnoopyHugWoodstock(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  const ss = s;
+  drawSnoopy(ctx, -ss * 0.08, ss * 0.06, ss * 0.55, "sit");
+  ctx.save();
+  ctx.translate(ss * 0.25, -ss * 0.05);
+  ctx.fillStyle = "#fdd835";
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = ss * 0.04;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, ss * 0.12, ss * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f0c020";
+  ctx.beginPath();
+  ctx.ellipse(-ss * 0.12, ss * 0.0, ss * 0.06, ss * 0.1, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(ss * 0.12, ss * 0.0, ss * 0.06, ss * 0.1, 0.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#e68a00";
+  ctx.beginPath();
+  ctx.moveTo(ss * 0.08, -ss * 0.08);
+  ctx.lineTo(ss * 0.16, -ss * 0.04);
+  ctx.lineTo(ss * 0.08, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#1a1a1a";
+  ctx.beginPath();
+  ctx.arc(ss * 0.04, -ss * 0.09, ss * 0.02, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(ss * 0.1, -ss * 0.09, ss * 0.018, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = ss * 0.04;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(ss * 0.04, ss * 0.06);
+  ctx.quadraticCurveTo(ss * 0.15, -ss * 0.08, ss * 0.2, -ss * 0.02);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawDogBone(ctx, x, y, s, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color || "#ffffff";
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = s * 0.08;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.35, 0);
+  ctx.arc(-s * 0.45, 0, s * 0.15, 0, Math.PI * 2);
+  ctx.moveTo(s * 0.35, 0);
+  ctx.arc(s * 0.45, 0, s * 0.15, 0, Math.PI * 2);
+  ctx.moveTo(-s * 0.35, 0);
+  ctx.lineTo(s * 0.35, 0);
+  ctx.stroke();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawPaperClip(ctx, x, y, s, rot) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot || 0);
+  ctx.strokeStyle = "#9e9e9e";
+  ctx.lineWidth = s * 0.08;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.3);
+  ctx.arc(0, -s * 0.3, s * 0.12, Math.PI, 0, false);
+  ctx.lineTo(0, s * 0.3);
+  ctx.arc(0, s * 0.3, s * 0.08, 0, Math.PI * 2, false);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSparkle(ctx, x, y, s, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color || "#fdd835";
+  ctx.beginPath();
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2;
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(Math.cos(a - 0.3) * s * 0.5, Math.sin(a - 0.3) * s * 0.5, Math.cos(a) * s, Math.sin(a) * s);
+    ctx.quadraticCurveTo(Math.cos(a + 0.3) * s * 0.5, Math.sin(a + 0.3) * s * 0.5, 0, 0);
+  }
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawRibbon(ctx, x, y, w, h, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color || "#fbc1d6";
+  ctx.beginPath();
+  ctx.moveTo(0, h * 0.5);
+  ctx.quadraticCurveTo(w * 0.15, 0, w * 0.5, 0);
+  ctx.quadraticCurveTo(w * 0.85, 0, w, h * 0.5);
+  ctx.quadraticCurveTo(w * 0.85, h, w * 0.5, h);
+  ctx.quadraticCurveTo(w * 0.15, h, 0, h * 0.5);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.globalAlpha = 0.3;
+  ctx.fillRect(w * 0.1, h * 0.15, w * 0.8, h * 0.1);
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawDoodle(ctx, x, y, s, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = color || "#5a6ebd";
+  ctx.lineWidth = s * 0.06;
+  ctx.lineCap = "round";
+  ctx.globalAlpha = 0.35;
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.4, -s * 0.2);
+  ctx.quadraticCurveTo(0, -s * 0.6, s * 0.4, -s * 0.2);
+  ctx.quadraticCurveTo(s * 0.5, s * 0.1, 0, s * 0.3);
+  ctx.quadraticCurveTo(-s * 0.5, s * 0.1, -s * 0.4, -s * 0.2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.3, s * 0.08, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawSnoopyOnDogHouse(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  drawDogHouse(ctx, 0, s * 0.3, s * 0.55);
+  drawSnoopy(ctx, 0, -s * 0.25, s * 0.4, "sleep");
+  ctx.restore();
+}
+
+function drawSnoopy(ctx, cx, cy, s, pose) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const ss = s;
+  const lw = ss * 0.05;
+  const hR = ss * 0.38;
+  const bW = ss * 0.46;
+  const bH = ss * 0.55;
+
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = lw;
+
+  const drawBody = (dx, dy) => {
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.ellipse(dx, dy, bW, bH, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  };
+  const drawHead = (hx, hy) => {
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(hx, hy, hR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(hx + hR * 0.55, hy + hR * 0.15, hR * 0.25, hR * 0.2, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  };
+  const drawEars = (ex, ey) => {
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.ellipse(ex - hR * 0.65, ey - hR * 0.05, hR * 0.22, hR * 0.45, -0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(ex + hR * 0.65, ey - hR * 0.05, hR * 0.22, hR * 0.45, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  const drawFace = (fx, fy) => {
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.arc(fx - hR * 0.18, fy - hR * 0.18, hR * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(fx + hR * 0.18, fy - hR * 0.18, hR * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.ellipse(fx + hR * 0.42, fy + hR * 0.1, hR * 0.08, hR * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 1.2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(fx + hR * 0.28, fy + hR * 0.2, hR * 0.12, 0.15, Math.PI - 0.15);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(fx + hR * 0.6, fy + hR * 0.32, hR * 0.05, 0.3, Math.PI - 0.3);
+    ctx.stroke();
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw;
+  };
+  const drawCollar = (cx, cy) => {
+    ctx.fillStyle = "#e53935";
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 0.8;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, hR * 0.38, hR * 0.16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#c62828";
+    ctx.beginPath();
+    ctx.arc(cx - hR * 0.28, cy + hR * 0.1, hR * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + hR * 0.28, cy + hR * 0.1, hR * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw;
+  };
+  const drawTail = () => {
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.ellipse(-bW * 0.5, bH * 0.25, hR * 0.08, hR * 0.12, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  const drawFeet = (f1x, f1y, f2x, f2y) => {
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.ellipse(f1x, f1y, hR * 0.08, hR * 0.06, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(f2x, f2y, hR * 0.08, hR * 0.06, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  if (pose === "sleep") {
+    ctx.rotate(Math.PI / 2);
+    drawBody(0, 0);
+    drawHead(ss * 0.45, -ss * 0.02);
+    drawEars(ss * 0.45, -ss * 0.02);
+    drawFace(ss * 0.45, -ss * 0.02);
+    drawCollar(ss * 0.22, 0);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.ellipse(0, ss * 0.08, hR * 0.06, hR * 0.03, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "run") {
+    drawBody(ss * 0.05, ss * 0.15);
+    drawHead(-ss * 0.05, -ss * 0.2);
+    drawEars(-ss * 0.05, -ss * 0.2);
+    drawFace(-ss * 0.05, -ss * 0.2);
+    drawCollar(-ss * 0.05, ss * 0.02);
+    drawTail();
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 1.2;
+    ctx.beginPath();
+    ctx.moveTo(ss * 0.3, ss * 0.2);
+    ctx.quadraticCurveTo(ss * 0.5, -ss * 0.05, ss * 0.45, -ss * 0.2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-ss * 0.15, ss * 0.15);
+    ctx.quadraticCurveTo(-ss * 0.35, -ss * 0.05, -ss * 0.4, -ss * 0.15);
+    ctx.stroke();
+    drawFeet(-ss * 0.3, ss * 0.5, ss * 0.15, ss * 0.55);
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "wave") {
+    drawBody(0, ss * 0.18);
+    drawHead(0, -ss * 0.2);
+    drawEars(0, -ss * 0.2);
+    drawFace(0, -ss * 0.2);
+    drawCollar(0, ss * 0.02);
+    drawTail();
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-ss * 0.25, ss * 0.2);
+    ctx.lineTo(-ss * 0.4, ss * 0.05);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ss * 0.25, ss * 0.15);
+    ctx.quadraticCurveTo(ss * 0.55, -ss * 0.2, ss * 0.65, -ss * 0.35);
+    ctx.stroke();
+    drawFeet(-ss * 0.2, ss * 0.55, ss * 0.2, ss * 0.55);
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "flower") {
+    drawBody(0, ss * 0.18);
+    drawHead(0, -ss * 0.2);
+    drawEars(0, -ss * 0.2);
+    drawFace(0, -ss * 0.2);
+    drawCollar(0, ss * 0.02);
+    drawTail();
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 1.3;
+    ctx.beginPath();
+    ctx.moveTo(-ss * 0.25, ss * 0.18);
+    ctx.quadraticCurveTo(-ss * 0.45, ss * 0.0, -ss * 0.4, -ss * 0.12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ss * 0.25, ss * 0.18);
+    ctx.quadraticCurveTo(ss * 0.4, ss * 0.0, ss * 0.35, -ss * 0.1);
+    ctx.stroke();
+    drawFeet(-ss * 0.2, ss * 0.52, ss * 0.2, ss * 0.52);
+    ctx.fillStyle = "#e57373";
+    const fp = ss * 0.02;
+    for (let a = 0; a < 5; a++) {
+      const ang = (a / 5) * Math.PI * 2 - Math.PI / 2;
+      ctx.beginPath();
+      ctx.ellipse(ss * 0.35 + Math.cos(ang) * fp * 4.5, -ss * 0.1 + Math.sin(ang) * fp * 4.5, fp * 3, fp * 2.5, ang, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#fdd835";
+    ctx.beginPath();
+    ctx.arc(ss * 0.35, -ss * 0.1, fp * 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#4caf50";
+    ctx.lineWidth = ss * 0.02;
+    ctx.beginPath();
+    ctx.moveTo(ss * 0.35, -ss * 0.06);
+    ctx.lineTo(ss * 0.36, ss * 0.08);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "read") {
+    drawBody(0, ss * 0.18);
+    drawHead(0, -ss * 0.18);
+    drawEars(0, -ss * 0.18);
+    drawFace(0, -ss * 0.18);
+    drawCollar(0, ss * 0.03);
+    drawTail();
+    drawFeet(-ss * 0.22, ss * 0.5, ss * 0.22, ss * 0.5);
+    ctx.fillStyle = "#e53935";
+    const bw2 = ss * 0.3;
+    const bh2 = ss * 0.2;
+    roundRect(ctx, -bw2, ss * 0.14, bw2 * 2, bh2, ss * 0.03);
+    ctx.fill();
+    ctx.strokeStyle = "#c62828";
+    ctx.lineWidth = ss * 0.025;
+    roundRect(ctx, -bw2, ss * 0.14, bw2 * 2, bh2, ss * 0.03);
+    ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(-bw2 * 0.5, ss * 0.16, bw2 * 0.4, bh2 * 0.85);
+    ctx.fillRect(bw2 * 0.1, ss * 0.16, bw2 * 0.4, bh2 * 0.85);
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 1.2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-bw2, ss * 0.14);
+    ctx.quadraticCurveTo(-bw2 * 1.3, ss * 0.05, -bw2 * 1.1, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bw2, ss * 0.14);
+    ctx.quadraticCurveTo(bw2 * 1.3, ss * 0.05, bw2 * 1.1, 0);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "peek") {
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(0, 0, hR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = ss * 0.06;
+    ctx.stroke();
+    drawEars(0, 0);
+    drawFace(0, 0);
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw;
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "laugh") {
+    drawBody(0, ss * 0.15);
+    ctx.save();
+    ctx.translate(0, -ss * 0.05);
+    ctx.rotate(0.15);
+    drawHead(0, -ss * 0.1);
+    drawEars(0, -ss * 0.1);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.arc(-hR * 0.15, -hR * 0.18, hR * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(hR * 0.15, -hR * 0.18, hR * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1a1a1a";
+    ctx.beginPath();
+    ctx.ellipse(hR * 0.35, hR * 0.15, hR * 0.08, hR * 0.05, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e53935";
+    ctx.beginPath();
+    ctx.arc(hR * 0.25, hR * 0.25, hR * 0.1, 0, Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = ss * 0.04;
+    ctx.beginPath();
+    ctx.arc(hR * 0.25, hR * 0.25, hR * 0.1, 0, Math.PI);
+    ctx.stroke();
+    ctx.restore();
+    drawCollar(0, ss * 0.06);
+    drawTail();
+    drawFeet(-ss * 0.2, ss * 0.5, ss * 0.2, ss * 0.5);
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "heart") {
+    drawBody(0, ss * 0.18);
+    drawHead(0, -ss * 0.2);
+    drawEars(0, -ss * 0.2);
+    drawFace(0, -ss * 0.2);
+    drawCollar(0, ss * 0.02);
+    drawTail();
+    drawFeet(-ss * 0.2, ss * 0.52, ss * 0.2, ss * 0.52);
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 1.3;
+    ctx.beginPath();
+    ctx.moveTo(-ss * 0.25, ss * 0.18);
+    ctx.quadraticCurveTo(-ss * 0.4, ss * 0.0, -ss * 0.35, -ss * 0.1);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ss * 0.25, ss * 0.18);
+    ctx.quadraticCurveTo(ss * 0.4, ss * 0.15, ss * 0.35, ss * 0.25);
+    ctx.stroke();
+    ctx.fillStyle = "#e53935";
+    const hs = ss * 0.12;
+    ctx.beginPath();
+    ctx.moveTo(ss * 0.35, ss * 0.18);
+    ctx.bezierCurveTo(ss * 0.35, ss * 0.14, ss * 0.28, ss * 0.1, ss * 0.24, ss * 0.14);
+    ctx.bezierCurveTo(ss * 0.2, ss * 0.18, ss * 0.35, ss * 0.28, ss * 0.35, ss * 0.28);
+    ctx.bezierCurveTo(ss * 0.35, ss * 0.28, ss * 0.5, ss * 0.18, ss * 0.46, ss * 0.14);
+    ctx.bezierCurveTo(ss * 0.42, ss * 0.1, ss * 0.35, ss * 0.14, ss * 0.35, ss * 0.18);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+
+  if (pose === "sit") {
+    drawBody(0, ss * 0.22);
+    drawHead(0, -ss * 0.15);
+    drawEars(0, -ss * 0.15);
+    drawFace(0, -ss * 0.15);
+    drawCollar(0, ss * 0.06);
+    drawTail();
+    drawFeet(-ss * 0.25, ss * 0.55, ss * 0.25, ss * 0.55);
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = lw * 1.3;
+    ctx.beginPath();
+    ctx.moveTo(-ss * 0.28, ss * 0.28);
+    ctx.quadraticCurveTo(-ss * 0.5, ss * 0.12, -ss * 0.45, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ss * 0.28, ss * 0.28);
+    ctx.quadraticCurveTo(ss * 0.5, ss * 0.12, ss * 0.45, 0);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  drawBody(0, ss * 0.22);
+  drawHead(0, -ss * 0.15);
+  drawEars(0, -ss * 0.15);
+  drawFace(0, -ss * 0.15);
+  drawCollar(0, ss * 0.06);
+  drawTail();
+  drawFeet(-ss * 0.25, ss * 0.55, ss * 0.25, ss * 0.55);
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = lw * 1.3;
+  ctx.beginPath();
+  ctx.moveTo(-ss * 0.28, ss * 0.28);
+  ctx.quadraticCurveTo(-ss * 0.5, ss * 0.12, -ss * 0.45, 0);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(ss * 0.28, ss * 0.28);
+  ctx.quadraticCurveTo(ss * 0.5, ss * 0.12, ss * 0.45, 0);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawWoodstock(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  const ss = s;
+  ctx.fillStyle = "#fdd835";
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = ss * 0.06;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, ss * 0.4, ss * 0.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f0c020";
+  ctx.beginPath();
+  ctx.ellipse(-ss * 0.4, -ss * 0.05, ss * 0.14, ss * 0.3, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(ss * 0.4, -ss * 0.05, ss * 0.14, ss * 0.3, 0.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#e68a00";
+  ctx.beginPath();
+  ctx.moveTo(ss * 0.28, -ss * 0.25);
+  ctx.lineTo(ss * 0.46, -ss * 0.16);
+  ctx.lineTo(ss * 0.28, -ss * 0.07);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#1a1a1a";
+  ctx.beginPath();
+  ctx.arc(ss * 0.1, -ss * 0.28, ss * 0.045, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(ss * 0.26, -ss * 0.28, ss * 0.04, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#e68a00";
+  ctx.lineWidth = ss * 0.05;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-ss * 0.12, ss * 0.42);
+  ctx.lineTo(-ss * 0.18, ss * 0.7);
+  ctx.moveTo(ss * 0.1, ss * 0.42);
+  ctx.lineTo(ss * 0.14, ss * 0.7);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawDogHouse(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  const ss = s;
+  ctx.fillStyle = "#d32f2f";
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = ss * 0.05;
+  ctx.beginPath();
+  ctx.moveTo(-ss * 0.85, -ss * 0.15);
+  ctx.lineTo(0, -ss * 0.85);
+  ctx.lineTo(ss * 0.85, -ss * 0.15);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f5f5f5";
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = ss * 0.04;
+  ctx.fillRect(-ss * 0.7, -ss * 0.15, ss * 1.4, ss * 0.95);
+  ctx.strokeRect(-ss * 0.7, -ss * 0.15, ss * 1.4, ss * 0.95);
+  ctx.fillStyle = "#5d4037";
+  ctx.beginPath();
+  ctx.arc(0, ss * 0.28, ss * 0.32, Math.PI, 0);
+  ctx.lineTo(ss * 0.32, ss * 0.75);
+  ctx.lineTo(-ss * 0.32, ss * 0.75);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#1a1a1a";
+  ctx.beginPath();
+  ctx.arc(-ss * 0.28, -ss * 0.35, ss * 0.07, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(ss * 0.28, -ss * 0.35, ss * 0.07, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawDaisy(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "#ffffff";
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(Math.cos(a) * s * 0.45, Math.sin(a) * s * 0.45, s * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "#fee89e";
+  ctx.beginPath();
+  ctx.arc(0, 0, s * 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function drawBow(ctx, x, y, s, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x - s, y - s * 0.7, x - s * 1.1, y - s * 0.1);
+  ctx.quadraticCurveTo(x - s, y + s * 0.5, x, y);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x + s, y - s * 0.7, x + s * 1.1, y - s * 0.1);
+  ctx.quadraticCurveTo(x + s, y + s * 0.5, x, y);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x - s * 0.4, y + s * 1.2);
+  ctx.lineTo(x - s * 0.1, y + s * 1.2);
+  ctx.lineTo(x, y);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + s * 0.4, y + s * 1.2);
+  ctx.lineTo(x + s * 0.1, y + s * 1.2);
+  ctx.lineTo(x, y);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(x, y, s * 0.28, s * 0.34, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(x - s * 0.5, y - s * 0.15, s * 0.25, s * 0.18, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCherry(ctx, x, y, s) {
+  ctx.save();
+  ctx.strokeStyle = "#7a4a1c";
+  ctx.lineWidth = Math.max(1.5, s * 0.12);
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x - s * 0.5, y - s * 1.4, x - s * 0.8, y - s * 1.6);
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x + s * 0.5, y - s * 1.4, x + s * 0.8, y - s * 1.6);
+  ctx.stroke();
+  ctx.fillStyle = "#7bbf6a";
+  ctx.beginPath();
+  ctx.ellipse(x + s * 0.55, y - s * 1.75, s * 0.5, s * 0.22, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+  const cherries = [
+    [x - s * 0.8, y - s * 1.6],
+    [x + s * 0.8, y - s * 1.6],
+  ];
+  cherries.forEach(([cx2, cy2]) => {
+    ctx.fillStyle = "#d23b4e";
+    ctx.beginPath();
+    ctx.arc(cx2, cy2, s * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.beginPath();
+    ctx.arc(cx2 - s * 0.18, cy2 - s * 0.18, s * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+}
+
+function drawMirror(ctx, x, y, s) {
+  ctx.save();
+  ctx.strokeStyle = "#c9a227";
+  ctx.lineWidth = Math.max(1.5, s * 0.12);
+  ctx.beginPath();
+  ctx.moveTo(x, y + s * 0.7);
+  ctx.lineTo(x, y + s * 1.6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(x, y, s * 0.7, s * 0.9, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(190,225,240,0.6)";
+  ctx.beginPath();
+  ctx.ellipse(x, y, s * 0.55, s * 0.75, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.7)";
+  ctx.lineWidth = Math.max(1, s * 0.1);
+  ctx.beginPath();
+  ctx.arc(x - s * 0.15, y - s * 0.1, s * 0.3, Math.PI * 1.1, Math.PI * 1.6);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSticker(ctx, x, y, s, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "#fffdf8";
+  ctx.beginPath();
+  ctx.arc(0, 0, s, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(0, 0, s * 0.82, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.beginPath();
+  ctx.ellipse(-s * 0.3, -s * 0.35, s * 0.35, s * 0.2, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+  drawHeart(ctx, 0, 0, s * 0.34, "#ffffff");
+  ctx.restore();
+}
+
+function drawWashiTape(ctx, x, y, w, h, rot, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = color;
+  ctx.fillRect(-w / 2, -h / 2, w, h);
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = "#ffffff";
+  for (let i = -w / 2; i < w / 2; i += 8) {
+    ctx.fillRect(i, -h / 2, 3, h);
+  }
+  ctx.restore();
+}
+
+function drawSafariLeaf(ctx, x, y, s, rot, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -s);
+  ctx.quadraticCurveTo(s * 0.7, 0, 0, s);
+  ctx.quadraticCurveTo(-s * 0.7, 0, 0, -s);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.lineWidth = Math.max(1, s * 0.12);
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.8);
+  ctx.lineTo(0, s * 0.8);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCubEye(ctx, x, y, r) {
+  ctx.save();
+  ctx.fillStyle = "#3a2414";
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x + r * 0.25, y + r * 0.2, r * 0.16, 0, Math.PI * 2);
+  ctx.fill();
+  drawStar(ctx, x + r * 0.45, y - r * 0.55, 4, r * 0.3, r * 0.12);
+  ctx.restore();
+}
+
+function drawBabyCub(ctx, x, y, s, pose) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.fillStyle = "#f3d9a0";
+  ctx.beginPath();
+  const bodyR = s * 0.7;
+  const steps = 24;
+  for (let i = 0; i <= steps; i++) {
+    const a = (i / steps) * Math.PI * 2;
+    const rr = bodyR * (1 + 0.06 * Math.sin(a * 9));
+    const px = Math.cos(a) * rr;
+    const py = Math.sin(a) * rr + s * 0.38;
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "#f6e0ad";
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.15, s * 0.62, 0, Math.PI * 2);
+  ctx.fill();
+
+  [-s * 0.5, s * 0.5].forEach((ex) => {
+    ctx.fillStyle = "#f6e0ad";
+    ctx.beginPath();
+    ctx.arc(ex, -s * 0.62, s * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e7b98f";
+    ctx.beginPath();
+    ctx.arc(ex, -s * 0.6, s * 0.11, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  drawLeopardSpot(ctx, -s * 0.3, -s * 0.2, 6, "#b5783f");
+  drawLeopardSpot(ctx, s * 0.32, -s * 0.1, 6, "#b5783f");
+  drawLeopardSpot(ctx, 0, s * 0.4, 6, "#b5783f");
+  drawLeopardSpot(ctx, -s * 0.35, s * 0.45, 5, "#b5783f");
+  drawLeopardSpot(ctx, s * 0.35, s * 0.45, 5, "#b5783f");
+
+  ctx.fillStyle = "rgba(244,150,170,0.5)";
+  ctx.beginPath();
+  ctx.arc(-s * 0.32, 0, s * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(s * 0.32, 0, s * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (pose === "sleep") {
+    ctx.strokeStyle = "#5a3a24";
+    ctx.lineWidth = Math.max(1.5, s * 0.05);
+    [-s * 0.22, s * 0.22].forEach((ex) => {
+      ctx.beginPath();
+      ctx.arc(ex, -s * 0.12, s * 0.14, Math.PI * 0.15, Math.PI * 0.85);
+      ctx.stroke();
+    });
+  } else if (pose === "peek") {
+    drawCubEye(ctx, -s * 0.22, -s * 0.1, s * 0.17);
+    ctx.fillStyle = "#5a3a24";
+    ctx.beginPath();
+    ctx.arc(s * 0.22, -s * 0.08, s * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    drawCubEye(ctx, -s * 0.22, -s * 0.1, s * 0.18);
+    drawCubEye(ctx, s * 0.22, -s * 0.1, s * 0.18);
+  }
+
+  ctx.fillStyle = "#b06b4a";
+  ctx.beginPath();
+  ctx.moveTo(0, s * 0.04);
+  ctx.lineTo(-s * 0.07, s * 0.12);
+  ctx.lineTo(s * 0.07, s * 0.12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "#5a3a24";
+  ctx.lineWidth = Math.max(1, s * 0.04);
+  ctx.beginPath();
+  ctx.moveTo(0, s * 0.12);
+  ctx.quadraticCurveTo(-s * 0.1, s * 0.22, -s * 0.18, s * 0.16);
+  ctx.moveTo(0, s * 0.12);
+  ctx.quadraticCurveTo(s * 0.1, s * 0.22, s * 0.18, s * 0.16);
+  ctx.stroke();
+
+  if (pose === "heart") {
+    drawHeart(ctx, 0, s * 0.5, s * 0.22, "#f48aa8");
+  }
+
+  ctx.restore();
+}
+
+function drawPaw(ctx, x, y, s, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(x, y, s * 0.6, s * 0.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (let k = -1; k <= 1; k++) {
+    ctx.beginPath();
+    ctx.arc(x + k * s * 0.6, y - s * 0.7, s * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawTail(ctx, x, y, s) {
+  ctx.save();
+  ctx.strokeStyle = "#c79a6a";
+  ctx.lineWidth = s * 0.45;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x - s * 0.6, y - s * 0.4, x - s * 0.2, y - s);
+  ctx.stroke();
+  ctx.fillStyle = "#5a3a24";
+  for (let i = 0; i < 4; i++) {
+    const tt = i / 4;
+    const tx = x - s * 0.6 * (1 - tt) + s * 0.4 * tt;
+    const ty = y - s * tt;
+    ctx.beginPath();
+    ctx.arc(tx, ty, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawGiraffeSpot(ctx, x, y, s, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  const n = 6 + Math.floor(Math.abs(Math.sin(x * 0.7 + y * 0.5)) * 2);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const r = s * (0.5 + 0.5 * Math.abs(Math.sin(i * 2.3 + x * 0.05 + y * 0.07)));
+    if (i === 0) ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    else ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawGiraffe(ctx, cx, cy, s) {
+  ctx.save();
+  const hs = s * 0.55;
+
+  ctx.fillStyle = "#e8a040";
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.2, cy + s * 0.6);
+  ctx.quadraticCurveTo(cx - s * 0.28, cy + s * 0.1, cx - s * 0.25, cy - s * 0.15);
+  ctx.lineTo(cx + s * 0.25, cy - s * 0.15);
+  ctx.quadraticCurveTo(cx + s * 0.28, cy + s * 0.1, cx + s * 0.2, cy + s * 0.6);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, hs, hs * 0.7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#d48a30";
+  ctx.beginPath();
+  ctx.ellipse(cx + hs * 0.7, cy + s * 0.02, hs * 0.35, hs * 0.28, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (const side of [-1, 1]) {
+    ctx.fillStyle = "#d48a30";
+    ctx.beginPath();
+    ctx.ellipse(cx + side * s * 0.28, cy - s * 0.55, s * 0.05, s * 0.12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#5a3a18";
+    ctx.beginPath();
+    ctx.arc(cx + side * s * 0.28, cy - s * 0.66, s * 0.065, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#d48a30";
+    ctx.beginPath();
+    ctx.ellipse(cx + side * s * 0.52, cy - s * 0.1, s * 0.16, s * 0.08, side * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "#1a0a00";
+  ctx.beginPath();
+  ctx.arc(cx - s * 0.15, cy + s * 0.02, s * 0.055, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx + s * 0.15, cy + s * 0.02, s * 0.055, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.arc(cx - s * 0.12, cy - s * 0.01, s * 0.02, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx + s * 0.18, cy - s * 0.01, s * 0.02, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#1a0a00";
+  ctx.lineWidth = 1.5;
+  for (const side of [-1, 1]) {
+    for (let l = 0; l < 3; l++) {
+      ctx.beginPath();
+      ctx.moveTo(cx + side * (s * 0.12 + l * s * 0.03), cy + s * 0.07);
+      ctx.lineTo(cx + side * (s * 0.16 + l * s * 0.05), cy + s * 0.14 + l * s * 0.02);
+      ctx.stroke();
+    }
+  }
+
+  ctx.fillStyle = "#5a3a18";
+  ctx.beginPath();
+  ctx.ellipse(cx + hs * 0.7 - s * 0.05, cy + s * 0.06, s * 0.025, s * 0.03, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx + hs * 0.7 + s * 0.05, cy + s * 0.06, s * 0.025, s * 0.03, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#5a3a18";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(cx + hs * 0.7, cy + s * 0.13, s * 0.07, -0.4, 0.4);
+  ctx.stroke();
+
+  const neckSpots = [[0, 0.25], [-0.1, 0.45], [0.08, 0.6]];
+  for (const [dx, dy] of neckSpots) {
+    drawGiraffeSpot(ctx, cx + dx * s, cy + dy * s, s * 0.13, "#8a5a28");
+  }
+
   ctx.restore();
 }
