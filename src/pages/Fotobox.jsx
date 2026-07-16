@@ -644,8 +644,7 @@ export default function Fotobox() {
     setPhotos(next);
     const total = selectedLayout.cols * selectedLayout.rows;
     if (next.length >= total) {
-      stopCamera();
-      setStep("preview");
+      setCurrentSlot(total);
     } else {
       setCurrentSlot(next.length);
     }
@@ -1163,8 +1162,13 @@ export default function Fotobox() {
                 </h3>
                 <div className="flex flex-wrap gap-3">
                   {photos.map((p, i) => (
-                    <div key={i} className="group relative w-24 h-[72px] border-2 border-on-background overflow-hidden shadow-[2px_2px_0px_0px_#000]">
-                      <img src={p} alt="" className="w-full h-full object-cover" />
+                    <div key={i} className="group relative w-24 h-[72px] border-2 border-on-background overflow-hidden shadow-[2px_2px_0px_0px_#000] cursor-pointer">
+                      <img
+                        src={p}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onClick={() => { setReplaceIndex(i); fileInputRef.current?.click(); }}
+                      />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <button
                           onClick={() => deletePhoto(i)}
@@ -1179,6 +1183,17 @@ export default function Fotobox() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            {photos.length >= totalSlots && (
+              <div className="mt-5 flex justify-center">
+                <button
+                  onClick={() => { stopCamera(); setStep("preview"); }}
+                  className="bg-primary text-on-primary border-2 border-on-background neu-shadow px-10 py-4 font-label-bold text-label-bold uppercase transition-all active:translate-x-1 active:translate-y-1 active:shadow-none hover:bg-primary-container hover:text-on-background flex items-center gap-3"
+                >
+                  <span className="material-symbols-outlined text-[24px]">auto_awesome</span>
+                  Buat Strip Foto
+                </button>
               </div>
             )}
           </div>
