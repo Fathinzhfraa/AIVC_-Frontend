@@ -509,6 +509,7 @@ export default function Fotobox() {
   const [waSent, setWaSent] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [replaceIndex, setReplaceIndex] = useState(-1);
 
   const isAdmin = user?.role === "admin";
   const hasOrder = user && getUserOrders(user.id).length > 0;
@@ -632,6 +633,13 @@ export default function Fotobox() {
   }
 
   function addPhoto(dataUrl) {
+    if (replaceIndex >= 0) {
+      const next = [...photos];
+      next[replaceIndex] = dataUrl;
+      setPhotos(next);
+      setReplaceIndex(-1);
+      return;
+    }
     const next = [...photos, dataUrl];
     setPhotos(next);
     const total = selectedLayout.cols * selectedLayout.rows;
@@ -977,8 +985,8 @@ export default function Fotobox() {
                 {Array.from({ length: totalSlots }).map((_, i) => (
                   <div
                     key={i}
-                    className={`aspect-[4/3] border-2 flex items-center justify-center transition-all duration-300 relative overflow-hidden ${
-                      photos[i]
+                      className={`aspect-[4/3] border-2 flex items-center justify-center transition-all duration-300 relative overflow-hidden group ${
+        photos[i]
                         ? "border-primary shadow-[0_0_0_2px_#8d4b00]"
                         : i === currentSlot
                         ? "border-on-background bg-background ring-2 ring-primary/40"
@@ -987,13 +995,24 @@ export default function Fotobox() {
                   >
                     {photos[i] ? (
                       <>
-                        <img src={photos[i]} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={photos[i]}
+                          alt=""
+                          className="w-full h-full object-cover cursor-pointer"
+                          onClick={() => {
+                            setReplaceIndex(i);
+                            fileInputRef.current.click();
+                          }}
+                        />
                         <button
                           onClick={() => deletePhoto(i)}
                           className="absolute top-1 right-1 bg-error text-white text-xs w-5 h-5 flex items-center justify-center border border-on-background hover:scale-110 transition-transform"
                         >
                           x
                         </button>
+                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] bg-black/50 text-white px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          klik untuk ganti
+                        </span>
                       </>
                     ) : (
                       <div className="text-center">
