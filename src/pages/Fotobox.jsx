@@ -13,7 +13,7 @@ async function ensureSnoopyImg() {
     await new Promise((resolve, reject) => {
       img.onload = resolve;
       img.onerror = reject;
-      img.src = asset("/images/snoopy.png");
+      img.src = asset("/images/snoopyy.png");
     });
     const c = document.createElement("canvas");
     c.width = img.naturalWidth;
