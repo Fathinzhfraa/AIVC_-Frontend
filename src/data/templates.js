@@ -555,6 +555,17 @@ const TEMPLATES = [
     textColor: "#5a6ebd",
     dotColor: "#fbc1d6",
   },
+  {
+    id: "koreanmodern",
+    name: "Korean Modern",
+    description: "Gaya Korea modern minimalis aesthetic",
+    icon: "spa",
+    bgColor: "#faf7f2",
+    borderColor: "#d4c9b8",
+    accentColor: "#f2b6c1",
+    textColor: "#5a4a3a",
+    dotColor: "#c4b5a0",
+  },
 ];
 
 const CATEGORY_OF = {
@@ -576,6 +587,7 @@ const CATEGORY_OF = {
   zebra: "seru",
   tiger: "seru",
   snoopydeluxe: "seru",
+  koreanmodern: "modern",
 };
 TEMPLATES.forEach((t) => { t.category = CATEGORY_OF[t.id] || "klasik"; });
 

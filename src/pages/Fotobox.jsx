@@ -219,6 +219,7 @@ const TEMPLATE_PADS = {
   zebra: { top: 140, right: 60, bottom: 150, left: 60 },
   tiger: { top: 120, right: 60, bottom: 150, left: 60 },
   snoopydeluxe: { top: 200, right: 56, bottom: 190, left: 56 },
+  koreanmodern: { top: 180, right: 60, bottom: 170, left: 60 },
 };
 
 function StepIndicator({ current }) {
@@ -3747,6 +3748,113 @@ function drawTemplate(ctx, w, h, t, pad, cells) {
     drawDogBone(ctx, cx + 145, botY + 36, 8, "#fffcf5");
     drawSparkle(ctx, cx - 130, botY + 28, 7, "#fdd835");
     drawSparkle(ctx, cx + 130, botY + 28, 7, "#fdd835");
+  } else if (t.id === "koreanmodern") {
+    const bw = 44;
+    ctx.fillStyle = "#f5efe6";
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, outerW, outerH);
+    ctx.rect(bw, bw, outerW - 2 * bw, outerH - 2 * bw);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "#e8ddd0";
+    ctx.fillRect(0, 0, outerW, outerH);
+    const sp = 24;
+    for (let y = 0; y < outerH; y += sp) {
+      for (let x = 0; x < outerW; x += sp) {
+        if ((Math.floor(x / sp) + Math.floor(y / sp)) % 3 === 0) {
+          ctx.fillStyle = "rgba(255,255,255,0.35)";
+          ctx.beginPath();
+          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = "#c4b5a0";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(bw + 6, bw + 6, outerW - 2 * (bw + 6), outerH - 2 * (bw + 6));
+
+    ctx.strokeStyle = "rgba(196,181,160,0.4)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bw + 10, bw + 10, outerW - 2 * (bw + 10), outerH - 2 * (bw + 10));
+
+    const rng = mulberry32(2305);
+
+    const topCenter = (bw + areaY) / 2;
+    drawHeart(ctx, cx - 50, topCenter + 4, 10, "#f2b6c1");
+    drawHeart(ctx, cx + 50, topCenter + 4, 10, "#f2b6c1");
+
+    ctx.fillStyle = "#5a4a3a";
+    ctx.font = "300 28px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("autentic", cx, topCenter + 2);
+    ctx.fillStyle = "#9a8a7a";
+    ctx.font = "10px Inter, sans-serif";
+    ctx.fillText("photobooth", cx, topCenter + 24);
+
+    (cells || []).forEach((c, i) => {
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0,0,0,0.06)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 6);
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+      ctx.strokeStyle = "#d4c9b8";
+      ctx.lineWidth = 1;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 6);
+      ctx.stroke();
+
+      if (i % 2 === 0) drawHeart(ctx, c.x + c.w / 2, c.y + c.h + 8, 6, "#f2b6c1");
+      else drawStar(ctx, c.x + c.w / 2, c.y + c.h + 6, 5, 5, 2.5);
+    });
+
+    for (let k = 0; k < 5; k++) {
+      const px = bw + 30 + rng() * (areaW - 60);
+      if (Math.abs(px - cx) < 100) continue;
+      const kind = rng();
+      if (kind < 0.4) drawStar(ctx, px, topCenter - 8, 5, 7 + rng() * 3, 2.5);
+      else if (kind < 0.7) drawHeart(ctx, px, topCenter - 6, 8 + rng() * 3, "#f2b6c1");
+    }
+
+    if ((cells || []).length > 1) {
+      (cells || []).forEach((c) => {
+        const isLastCol = (c.x + c.w) >= areaX + areaW - 1;
+        const isLastRow = (c.y + c.h) >= botY - 1;
+        if (!isLastCol) drawHeart(ctx, c.x + c.w + 8, c.y + c.h / 2, 5, "#f2b6c1");
+        if (!isLastRow) drawStar(ctx, c.x + c.w / 2, c.y + c.h + 8, 5, 5, 2);
+      });
+    }
+
+    for (let k = 0; k < 6; k++) {
+      const px = bw + 30 + rng() * (areaW - 60);
+      if (Math.abs(px - cx) < 120) continue;
+      const kind = rng();
+      if (kind < 0.35) drawHeart(ctx, px, botMid, 8 + rng() * 3, "#f2b6c1");
+      else if (kind < 0.6) drawStar(ctx, px, botMid, 5, 7 + rng() * 3, 2.5);
+    }
+
+    ctx.fillStyle = "#5a4a3a";
+    ctx.font = "300 26px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("aesthetic", cx, botMid - 4);
+
+    ctx.fillStyle = "#9a8a7a";
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillText("AUTENTIC'S · KOREAN PHOTOBOOTH", cx, botMid + 20);
+
+    drawHeart(ctx, cx - 140, botMid, 10, "#f2b6c1");
+    drawHeart(ctx, cx + 140, botMid, 10, "#f2b6c1");
   }
   ctx.restore();
 }
