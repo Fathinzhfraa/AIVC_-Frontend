@@ -15,84 +15,8 @@ async function ensureSnoopyImg() {
       img.onerror = reject;
       img.src = asset("/images/snoopy.png");
     });
-    const c = document.createElement("canvas");
-    c.width = img.naturalWidth;
-    c.height = img.naturalHeight;
-    const vw = c.width, vh = c.height;
-    const cx = c.getContext("2d");
-    cx.drawImage(img, 0, 0);
-    const d = cx.getImageData(0, 0, vw, vh);
-    const p = d.data;
-
-    const edgeColors = [];
-    const seen = new Set();
-    const add = (r, g, b) => {
-      const k = r + "," + g + "," + b;
-      if (!seen.has(k)) { seen.add(k); edgeColors.push({ r, g, b }); }
-    };
-    for (let y = 0; y < 2 && y < vh; y++)
-      for (let x = 0; x < vw; x++) {
-        const i = (y * vw + x) * 4;
-        add(p[i], p[i+1], p[i+2]);
-        const i2 = ((vh-1-y) * vw + x) * 4;
-        add(p[i2], p[i2+1], p[i2+2]);
-      }
-    for (let y = 2; y < vh-2; y++) {
-      const i = (y * vw) * 4, i2 = (y * vw + vw - 1) * 4;
-      add(p[i], p[i+1], p[i+2]); add(p[i2], p[i2+1], p[i2+2]);
-    }
-
-    const vis = new Uint8Array(vw * vh);
-    const q = [];
-    for (let y = 0; y < vh; y++) {
-      for (const x of [0, vw-1]) {
-        const i = (y * vw + x) * 4;
-        for (const ec of edgeColors) {
-          if (Math.abs(p[i]-ec.r) <= 15 && Math.abs(p[i+1]-ec.g) <= 15 && Math.abs(p[i+2]-ec.b) <= 15) {
-            if (!vis[y*vw+x]) { vis[y*vw+x] = 1; q.push(y*vw+x); p[i+3] = 0; }
-            break;
-          }
-        }
-      }
-    }
-    for (let x = 0; x < vw; x++) {
-      for (const y of [0, vh-1]) {
-        const i = (y * vw + x) * 4;
-        if (vis[y*vw+x]) continue;
-        for (const ec of edgeColors) {
-          if (Math.abs(p[i]-ec.r) <= 15 && Math.abs(p[i+1]-ec.g) <= 15 && Math.abs(p[i+2]-ec.b) <= 15) {
-            vis[y*vw+x] = 1; q.push(y*vw+x); p[i+3] = 0;
-            break;
-          }
-        }
-      }
-    }
-
-    let qi = 0;
-    while (qi < q.length) {
-      const pos = q[qi++];
-      for (const np of [pos - vw, pos + vw, pos - 1, pos + 1]) {
-        if (np < 0 || np >= vw * vh || vis[np]) continue;
-        if (Math.abs(np % vw - pos % vw) > 1) continue;
-        const i = np * 4;
-        for (const ec of edgeColors) {
-          if (Math.abs(p[i]-ec.r) <= 15 && Math.abs(p[i+1]-ec.g) <= 15 && Math.abs(p[i+2]-ec.b) <= 15) {
-            vis[np] = 1; q.push(np); p[i+3] = 0;
-            break;
-          }
-        }
-      }
-    }
-
-    cx.putImageData(d, 0, 0);
-    const out = new Image();
-    await new Promise((resolve, reject) => {
-      out.onload = resolve;
-      out.onerror = reject;
-      out.src = c.toDataURL("image/png");
-    });
-    snoopyImgCache = out;
-    return out;
+    snoopyImgCache = img;
+    return img;
   } catch {
     return null;
   }
