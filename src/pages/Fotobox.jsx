@@ -15,8 +15,88 @@ async function ensureSnoopyImg() {
       img.onerror = reject;
       img.src = asset("/images/snoopy.png");
     });
-    snoopyImgCache = img;
-    return img;
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const vw = c.width, vh = c.height;
+    const cx = c.getContext("2d");
+    cx.drawImage(img, 0, 0);
+    const d = cx.getImageData(0, 0, vw, vh);
+    const p = d.data;
+
+    // collect edge colors, keeping beige tones separately from pure white
+    let sr = 0, sg = 0, sb = 0, sn = 0;
+    for (let y = 0; y < 3 && y < vh; y++) {
+      for (let x = 0; x < vw; x++) {
+        for (const yy of [y, vh - 1 - y]) {
+          const i = (yy * vw + x) * 4;
+          const r = p[i], g = p[i+1], b = p[i+2];
+          // only include non-white edge pixels to get the real bg color
+          if (r < 250 || g < 245 || b < 240) {
+            sr += r; sg += g; sb += b; sn++;
+          }
+        }
+      }
+    }
+    // also sample left/right edges
+    for (let y = 3; y < vh - 3; y++) {
+      for (const x of [0, vw-1]) {
+        const i = (y * vw + x) * 4;
+        const r = p[i], g = p[i+1], b = p[i+2];
+        if (r < 250 || g < 245 || b < 240) {
+          sr += r; sg += g; sb += b; sn++;
+        }
+      }
+    }
+
+    if (sn === 0) { snoopyImgCache = img; return img; }
+    const bgR = Math.round(sr / sn);
+    const bgG = Math.round(sg / sn);
+    const bgB = Math.round(sb / sn);
+
+    const tol = 6;
+    const vis = new Uint8Array(vw * vh);
+    const q = [];
+    for (let y = 0; y < vh; y++) {
+      for (const x of [0, vw-1]) {
+        const i = (y * vw + x) * 4;
+        if (Math.abs(p[i]-bgR) <= tol && Math.abs(p[i+1]-bgG) <= tol && Math.abs(p[i+2]-bgB) <= tol) {
+          if (!vis[y*vw+x]) { vis[y*vw+x] = 1; q.push(y*vw+x); p[i+3] = 0; }
+        }
+      }
+    }
+    for (let x = 0; x < vw; x++) {
+      for (const y of [0, vh-1]) {
+        const i = (y * vw + x) * 4;
+        if (vis[y*vw+x]) continue;
+        if (Math.abs(p[i]-bgR) <= tol && Math.abs(p[i+1]-bgG) <= tol && Math.abs(p[i+2]-bgB) <= tol) {
+          vis[y*vw+x] = 1; q.push(y*vw+x); p[i+3] = 0;
+        }
+      }
+    }
+
+    let qi = 0;
+    while (qi < q.length) {
+      const pos = q[qi++];
+      for (const np of [pos - vw, pos + vw, pos - 1, pos + 1]) {
+        if (np < 0 || np >= vw * vh || vis[np]) continue;
+        if (Math.abs(np % vw - pos % vw) > 1) continue;
+        const i = np * 4;
+        if (Math.abs(p[i]-bgR) <= tol && Math.abs(p[i+1]-bgG) <= tol && Math.abs(p[i+2]-bgB) <= tol) {
+          vis[np] = 1; q.push(np); p[i+3] = 0;
+        }
+      }
+    }
+
+    cx.putImageData(d, 0, 0);
+    const out = new Image();
+    await new Promise((resolve, reject) => {
+      out.onload = resolve;
+      out.onerror = reject;
+      out.src = c.toDataURL("image/png");
+    });
+    snoopyImgCache = out;
+    return out;
   } catch {
     return null;
   }
