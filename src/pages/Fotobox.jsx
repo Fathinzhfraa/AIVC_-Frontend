@@ -17,16 +17,64 @@ async function ensureSnoopyImg() {
     const c = document.createElement("canvas");
     c.width = img.naturalWidth;
     c.height = img.naturalHeight;
+    const vw = c.width, vh = c.height;
     const cx = c.getContext("2d");
     cx.drawImage(img, 0, 0);
-    const d = cx.getImageData(0, 0, c.width, c.height);
+    const d = cx.getImageData(0, 0, vw, vh);
     const p = d.data;
-    for (let i = 0; i < p.length; i += 4) {
-      const r = p[i], g = p[i + 1], b = p[i + 2];
-      if (r > 200 && g > 190 && b > 170 && Math.abs(r - g) < 30 && Math.abs(g - b) < 30) {
-        p[i + 3] = 0;
+
+    let sr = 0, sg = 0, sb = 0, sn = 0;
+    const edge = 8;
+    for (let y = 0; y < edge && y < vh; y++) {
+      for (let x = 0; x < edge && x < vw; x++) {
+        const idx = (y * vw + x) * 4;
+        sr += p[idx]; sg += p[idx+1]; sb += p[idx+2]; sn++;
+        const idx2 = (y * vw + (vw-1-x)) * 4;
+        sr += p[idx2]; sg += p[idx2+1]; sb += p[idx2+2]; sn++;
+        const idx3 = ((vh-1-y) * vw + x) * 4;
+        sr += p[idx3]; sg += p[idx3+1]; sb += p[idx3+2]; sn++;
+        const idx4 = ((vh-1-y) * vw + (vw-1-x)) * 4;
+        sr += p[idx4]; sg += p[idx4+1]; sb += p[idx4+2]; sn++;
       }
     }
+    const bgR = sr / sn, bgG = sg / sn, bgB = sb / sn;
+    const t = 28;
+
+    const visited = new Uint8Array(vw * vh);
+    const q = [];
+    for (let x = 0; x < vw; x++) {
+      for (const y of [0, vh-1]) {
+        const idx = (y * vw + x) * 4;
+        const dr = p[idx]-bgR, dg = p[idx+1]-bgG, db = p[idx+2]-bgB;
+        if (dr*dr + dg*dg + db*db < t*t && !visited[y*vw + x]) {
+          visited[y*vw + x] = 1; q.push(y * vw + x); p[idx+3] = 0;
+        }
+      }
+    }
+    for (let y = 1; y < vh-1; y++) {
+      for (const x of [0, vw-1]) {
+        const idx = (y * vw + x) * 4;
+        const dr = p[idx]-bgR, dg = p[idx+1]-bgG, db = p[idx+2]-bgB;
+        if (dr*dr + dg*dg + db*db < t*t && !visited[y*vw + x]) {
+          visited[y*vw + x] = 1; q.push(y * vw + x); p[idx+3] = 0;
+        }
+      }
+    }
+
+    let qi = 0;
+    while (qi < q.length) {
+      const pos = q[qi++];
+      for (const np of [pos - vw, pos + vw, pos - 1, pos + 1]) {
+        if (np < 0 || np >= vw * vh || visited[np]) continue;
+        if (Math.abs(np % vw - pos % vw) > 1) continue;
+        const idx = np * 4;
+        const dr = p[idx]-bgR, dg = p[idx+1]-bgG, db = p[idx+2]-bgB;
+        if (dr*dr + dg*dg + db*db < t*t) {
+          visited[np] = 1; q.push(np); p[idx+3] = 0;
+        }
+      }
+    }
+
     cx.putImageData(d, 0, 0);
     const out = new Image();
     await new Promise((resolve, reject) => {
