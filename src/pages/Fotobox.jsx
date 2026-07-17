@@ -23,40 +23,46 @@ async function ensureSnoopyImg() {
     const d = cx.getImageData(0, 0, vw, vh);
     const p = d.data;
 
-    let sr = 0, sg = 0, sb = 0, sn = 0;
-    const edge = 8;
-    for (let y = 0; y < edge && y < vh; y++) {
-      for (let x = 0; x < edge && x < vw; x++) {
-        const idx = (y * vw + x) * 4;
-        sr += p[idx]; sg += p[idx+1]; sb += p[idx+2]; sn++;
-        const idx2 = (y * vw + (vw-1-x)) * 4;
-        sr += p[idx2]; sg += p[idx2+1]; sb += p[idx2+2]; sn++;
-        const idx3 = ((vh-1-y) * vw + x) * 4;
-        sr += p[idx3]; sg += p[idx3+1]; sb += p[idx3+2]; sn++;
-        const idx4 = ((vh-1-y) * vw + (vw-1-x)) * 4;
-        sr += p[idx4]; sg += p[idx4+1]; sb += p[idx4+2]; sn++;
+    const edgeColors = [];
+    const seen = new Set();
+    const add = (r, g, b) => {
+      const k = r + "," + g + "," + b;
+      if (!seen.has(k)) { seen.add(k); edgeColors.push({ r, g, b }); }
+    };
+    for (let y = 0; y < 2 && y < vh; y++)
+      for (let x = 0; x < vw; x++) {
+        const i = (y * vw + x) * 4;
+        add(p[i], p[i+1], p[i+2]);
+        const i2 = ((vh-1-y) * vw + x) * 4;
+        add(p[i2], p[i2+1], p[i2+2]);
       }
+    for (let y = 2; y < vh-2; y++) {
+      const i = (y * vw) * 4, i2 = (y * vw + vw - 1) * 4;
+      add(p[i], p[i+1], p[i+2]); add(p[i2], p[i2+1], p[i2+2]);
     }
-    const bgR = sr / sn, bgG = sg / sn, bgB = sb / sn;
-    const t = 28;
 
-    const visited = new Uint8Array(vw * vh);
+    const vis = new Uint8Array(vw * vh);
     const q = [];
-    for (let x = 0; x < vw; x++) {
-      for (const y of [0, vh-1]) {
-        const idx = (y * vw + x) * 4;
-        const dr = p[idx]-bgR, dg = p[idx+1]-bgG, db = p[idx+2]-bgB;
-        if (dr*dr + dg*dg + db*db < t*t && !visited[y*vw + x]) {
-          visited[y*vw + x] = 1; q.push(y * vw + x); p[idx+3] = 0;
+    for (let y = 0; y < vh; y++) {
+      for (const x of [0, vw-1]) {
+        const i = (y * vw + x) * 4;
+        for (const ec of edgeColors) {
+          if (Math.abs(p[i]-ec.r) <= 15 && Math.abs(p[i+1]-ec.g) <= 15 && Math.abs(p[i+2]-ec.b) <= 15) {
+            if (!vis[y*vw+x]) { vis[y*vw+x] = 1; q.push(y*vw+x); p[i+3] = 0; }
+            break;
+          }
         }
       }
     }
-    for (let y = 1; y < vh-1; y++) {
-      for (const x of [0, vw-1]) {
-        const idx = (y * vw + x) * 4;
-        const dr = p[idx]-bgR, dg = p[idx+1]-bgG, db = p[idx+2]-bgB;
-        if (dr*dr + dg*dg + db*db < t*t && !visited[y*vw + x]) {
-          visited[y*vw + x] = 1; q.push(y * vw + x); p[idx+3] = 0;
+    for (let x = 0; x < vw; x++) {
+      for (const y of [0, vh-1]) {
+        const i = (y * vw + x) * 4;
+        if (vis[y*vw+x]) continue;
+        for (const ec of edgeColors) {
+          if (Math.abs(p[i]-ec.r) <= 15 && Math.abs(p[i+1]-ec.g) <= 15 && Math.abs(p[i+2]-ec.b) <= 15) {
+            vis[y*vw+x] = 1; q.push(y*vw+x); p[i+3] = 0;
+            break;
+          }
         }
       }
     }
@@ -65,12 +71,14 @@ async function ensureSnoopyImg() {
     while (qi < q.length) {
       const pos = q[qi++];
       for (const np of [pos - vw, pos + vw, pos - 1, pos + 1]) {
-        if (np < 0 || np >= vw * vh || visited[np]) continue;
+        if (np < 0 || np >= vw * vh || vis[np]) continue;
         if (Math.abs(np % vw - pos % vw) > 1) continue;
-        const idx = np * 4;
-        const dr = p[idx]-bgR, dg = p[idx+1]-bgG, db = p[idx+2]-bgB;
-        if (dr*dr + dg*dg + db*db < t*t) {
-          visited[np] = 1; q.push(np); p[idx+3] = 0;
+        const i = np * 4;
+        for (const ec of edgeColors) {
+          if (Math.abs(p[i]-ec.r) <= 15 && Math.abs(p[i+1]-ec.g) <= 15 && Math.abs(p[i+2]-ec.b) <= 15) {
+            vis[np] = 1; q.push(np); p[i+3] = 0;
+            break;
+          }
         }
       }
     }
