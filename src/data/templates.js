@@ -545,17 +545,6 @@ const TEMPLATES = [
     dotColor: "#7a3d10",
   },
   {
-    id: "snoopy",
-    name: "Snoopy",
-    description: "Photobooth Snoopy lucu",
-    icon: "pets",
-    bgColor: "#fffcf5",
-    borderColor: "#c5e3f6",
-    accentColor: "#fdd835",
-    textColor: "#5a6ebd",
-    dotColor: "#6b8ec9",
-  },
-  {
     id: "snoopydeluxe",
     name: "Snoopy Deluxe",
     description: "Snoopy scrapbook aesthetic penuh ilustrasi",
@@ -586,7 +575,6 @@ const CATEGORY_OF = {
   leopardcub: "seru",
   zebra: "seru",
   tiger: "seru",
-  snoopy: "seru",
   snoopydeluxe: "seru",
 };
 TEMPLATES.forEach((t) => { t.category = CATEGORY_OF[t.id] || "klasik"; });
