@@ -16,8 +16,8 @@ export default function Footer() {
               Lokasi
             </h4>
             <p className="font-body-md text-body-md text-on-surface-variant text-sm">
-              Jl. Kopi Nikmat No. 42<br />
-              Jakarta Selatan, Indonesia
+             Indonesia<br />
+              
             </p>
           </div>
           <div>
