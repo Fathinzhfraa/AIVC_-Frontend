@@ -47,9 +47,11 @@ function drawSnoopyImg(ctx, cx, cy, size, flipX, flipY, rot) {
   ctx.save();
   ctx.translate(cx, cy);
   if (rot) ctx.rotate(rot);
-  const s = size / 1080;
+  const iw = img.naturalWidth || 1080;
+  const ih = img.naturalHeight || 1080;
+  const scale = size / Math.max(iw, ih);
   if (flipX || flipY) ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-  ctx.drawImage(img, -540 * s, -540 * s, 1080 * s, 1080 * s);
+  ctx.drawImage(img, -iw / 2 * scale, -ih / 2 * scale, iw * scale, ih * scale);
   ctx.restore();
 }
 
