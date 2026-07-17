@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import TEMPLATES, { LAYOUTS, FILTERS, CATEGORIES } from "../data/templates";
 import { useAuth } from "../context/AuthContext";
 import { getUserOrders } from "../data/orderStore";
+import { asset } from "../lib/asset";
 
 let snoopyImgCache = null;
 async function ensureSnoopyImg() {
@@ -12,7 +13,7 @@ async function ensureSnoopyImg() {
     await new Promise((resolve, reject) => {
       img.onload = resolve;
       img.onerror = reject;
-      img.src = "/images/snoopy.png";
+      img.src = asset("/images/snoopy.png");
     });
     const c = document.createElement("canvas");
     c.width = img.naturalWidth;
