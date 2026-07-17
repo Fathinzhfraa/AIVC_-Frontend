@@ -566,6 +566,17 @@ const TEMPLATES = [
     textColor: "#5a4a3a",
     dotColor: "#c4b5a0",
   },
+  {
+    id: "koreancafe",
+    name: "Korean Cafe",
+    description: "Cafe aesthetic Seoul dengan detail ilustrasi",
+    icon: "local_cafe",
+    bgColor: "#f3ede4",
+    borderColor: "#b8a58a",
+    accentColor: "#d68a7a",
+    textColor: "#4a3a2a",
+    dotColor: "#a0907a",
+  },
 ];
 
 const CATEGORY_OF = {
@@ -588,6 +599,7 @@ const CATEGORY_OF = {
   tiger: "seru",
   snoopydeluxe: "seru",
   koreanmodern: "modern",
+  koreancafe: "modern",
 };
 TEMPLATES.forEach((t) => { t.category = CATEGORY_OF[t.id] || "klasik"; });
 

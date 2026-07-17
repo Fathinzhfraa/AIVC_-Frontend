@@ -220,6 +220,7 @@ const TEMPLATE_PADS = {
   tiger: { top: 120, right: 60, bottom: 150, left: 60 },
   snoopydeluxe: { top: 200, right: 56, bottom: 190, left: 56 },
   koreanmodern: { top: 180, right: 60, bottom: 170, left: 60 },
+  koreancafe: { top: 200, right: 56, bottom: 190, left: 56 },
 };
 
 function StepIndicator({ current }) {
@@ -3855,6 +3856,127 @@ function drawTemplate(ctx, w, h, t, pad, cells) {
 
     drawHeart(ctx, cx - 140, botMid, 10, "#f2b6c1");
     drawHeart(ctx, cx + 140, botMid, 10, "#f2b6c1");
+  } else if (t.id === "koreancafe") {
+    const bw = 48;
+    const rng = mulberry32(9876);
+
+    ctx.fillStyle = "#f3ede4";
+    ctx.fillRect(0, 0, outerW, outerH);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, outerW, outerH);
+    ctx.rect(bw, bw, outerW - 2 * bw, outerH - 2 * bw);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "#dccfc0";
+    ctx.fillRect(0, 0, outerW, outerH);
+    for (let y = 0; y < outerH; y += 6) {
+      ctx.fillStyle = y % 12 === 0 ? "rgba(160,144,122,0.06)" : "rgba(255,255,255,0.04)";
+      ctx.fillRect(0, y, outerW, 2);
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = "#b8a58a";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(bw + 4, bw + 4, outerW - 2 * (bw + 4), outerH - 2 * (bw + 4));
+
+    const tY = (bw + areaY) / 2;
+
+    drawTulip(ctx, cx - 85, tY + 6, 16, "#d68a7a");
+    drawTulip(ctx, cx + 85, tY + 6, 16, "#d68a7a");
+    drawBow(ctx, cx, tY - 10, 18, "#d68a7a");
+    drawCherry(ctx, cx - 110, tY + 4, 12);
+    drawCherry(ctx, cx + 110, tY + 4, 12);
+
+    ctx.fillStyle = "#4a3a2a";
+    ctx.font = "300 22px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("cafe", cx, tY + 28);
+
+    ctx.fillStyle = "#9a8a7a";
+    ctx.font = "9px Inter, sans-serif";
+    ctx.fillText("seoul photobooth", cx, tY + 46);
+
+    drawCoffeeBean(ctx, cx - 50, tY + 52, 8);
+    drawCoffeeBean(ctx, cx + 50, tY + 52, 8);
+
+    (cells || []).forEach((c, i) => {
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0,0,0,0.05)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 4);
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+      ctx.strokeStyle = "#dccfc0";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, c.x - 4, c.y - 4, c.w + 8, c.h + 8, 4);
+      ctx.stroke();
+
+      ctx.fillStyle = "#4a3a2a";
+      ctx.font = "italic 10px 'Segoe Script','Brush Script MT',cursive";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+
+      if (i === 0) { drawCoffeeBean(ctx, c.x + 6, c.y + 6, 6); ctx.fillText("coffee", c.x + 16, c.y + 12); }
+      else if (i === 1) { drawCherry(ctx, c.x + 8, c.y + 8, 7); ctx.fillText("cherry", c.x + 18, c.y + 14); }
+      else if (i === 2) { drawTulip(ctx, c.x + 8, c.y + 6, 8, "#d68a7a"); ctx.fillText("tulip", c.x + 18, c.y + 12); }
+      else { drawStar(ctx, c.x + 10, c.y + 8, 5, 5, 2); ctx.fillText("star", c.x + 20, c.y + 12); }
+    });
+
+    for (let k = 0; k < 4; k++) {
+      const px = bw + 30 + rng() * (areaW - 60);
+      if (Math.abs(px - cx) < 100) continue;
+      const kind = rng();
+      if (kind < 0.4) drawHeart(ctx, px, tY - 4, 7 + rng() * 3, "#d68a7a");
+      else if (kind < 0.7) drawStar(ctx, px, tY - 2, 5, 6 + rng() * 2, 2.5);
+      else drawCherry(ctx, px, tY, 8);
+    }
+
+    if ((cells || []).length > 1) {
+      (cells || []).forEach((c) => {
+        const lc = (c.x + c.w) >= areaX + areaW - 1;
+        const lr = (c.y + c.h) >= botY - 1;
+        if (!lc) {
+          drawHeart(ctx, c.x + c.w + 7, c.y + c.h / 2 - 4, 5, "#d68a7a");
+          drawCoffeeBean(ctx, c.x + c.w + 7, c.y + c.h / 2 + 6, 5);
+        }
+        if (!lr) {
+          drawCherry(ctx, c.x + c.w / 2, c.y + c.h + 7, 7);
+        }
+      });
+    }
+
+    for (let k = 0; k < 6; k++) {
+      const px = bw + 30 + rng() * (areaW - 60);
+      if (Math.abs(px - cx) < 120) continue;
+      const kind = rng();
+      if (kind < 0.3) drawCroissant(ctx, px, botMid - 6, 14, "#d4a060");
+      else if (kind < 0.5) drawTulip(ctx, px, botMid, 14, "#d68a7a");
+      else if (kind < 0.7) drawHeart(ctx, px, botMid, 8 + rng() * 3, "#d68a7a");
+      else drawCherry(ctx, px, botMid - 2, 10);
+    }
+
+    ctx.fillStyle = "#4a3a2a";
+    ctx.font = "300 24px 'Playfair Display', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("cafe", cx, botMid - 22);
+
+    ctx.fillStyle = "#9a8a7a";
+    ctx.font = "10px Inter, sans-serif";
+    ctx.fillText("AUTENTIC'S  ·  2026  ·  SEOUL", cx, botMid + 2);
+
+    drawBow(ctx, cx - 140, botMid - 6, 14, "#d68a7a");
+    drawBow(ctx, cx + 140, botMid - 6, 14, "#d68a7a");
+    drawCoffeeBean(ctx, cx - 120, botMid + 16, 6);
+    drawCoffeeBean(ctx, cx + 120, botMid + 16, 6);
   }
   ctx.restore();
 }
